@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package ProtoHits;
+
+message NeulandHit {
+    uint32 event = 1;
+    uint32 paddle = 2;
+    double TDCL = 3;
+    double TDCR = 4;
+    double time = 5;
+    double QDCL = 6;
+    double QDCR = 7;
+    double energy = 8;
+
+    message Vector3D {
+        double x = 1;
+        double y = 2;
+        double z = 3;
+    }
+
+    Vector3D position = 9;
+    Vector3D pixel = 10;
+}
+
+message NeulandEvent {
+    repeated NeulandHit hits = 1;
+}
+
+message NeulandData {
+    repeated NeulandEvent events = 1;
+}
