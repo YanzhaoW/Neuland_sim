@@ -27,7 +27,7 @@ cd macros
 
 ### step 3:
 Under the root folder `R3BRoot/`, compile the whole project with:
-```text
+```shell
 mkdir build
 cd build
 cmake ..
@@ -36,6 +36,6 @@ make -j8
 where the number `8` after `-j` in the last line represents the number of cores that are used for the compilation. You can choose any number of cores you would like.
 
 If the compilation is successful, run the following command under the root folder `R3BRoot/`
-```text
+```shell
 source ./build/config.sh
 ```
