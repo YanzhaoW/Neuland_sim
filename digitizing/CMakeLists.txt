@@ -1,4 +1,4 @@
-set(OtherLibs "${SIMPATH}/lib/libCore.so" "${SIMPATH}/lib/libMathCore.so" R3BData VMCLibrary Physics R3Bbase R3BNeulandShared Hist Field)
+set(OtherLibs ${ROOT_LIBRARIES} R3BData VMCLibrary Physics R3Bbase R3BNeulandShared Hist Field)
 
 add_library(digitizing
     DigitizingEngine.cxx
