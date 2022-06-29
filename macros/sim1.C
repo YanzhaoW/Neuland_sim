@@ -4,8 +4,8 @@ int sim1(){
     const TString workDirectory = getenv("VMCWORKDIR");
     const TString simufile = "test.simu.root";
     const TString parafile = "test.para.root";
-    const Int_t eventNum = 1000;
-    const Int_t printEventNum = 100;
+    const Int_t eventNum = 50;
+    // const Int_t printEventNum = 100;
 
     FairBoxGenerator* boxGen = new FairBoxGenerator{2112, 4};
     boxGen->SetXYZ(0, 0, 0.);
