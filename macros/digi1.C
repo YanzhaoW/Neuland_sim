@@ -6,6 +6,7 @@ void digi1(){
     gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
     gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
     FairLogger::GetLogger()->SetLogScreenLevel("nolog");
+
     FairRunAna run;
     run.SetSource(new FairFileSource("test.simu.root"));
     run.SetSink(new FairRootFileSink("test.digi.root"));
@@ -15,11 +16,12 @@ void digi1(){
     auto runtimeDb = run.GetRuntimeDb();
     runtimeDb->setFirstInput(io);
 
-    std::cout << "---------------------" << std::endl;
     run.AddTask(new R3BNeulandDigitizer());
-    run.Init();
 
+    run.Init();
     run.Run(0,0);
+
+
     std::cout << "*************" << std::endl;
     timer.Stop(); 
     std::cout << "Macro finished successfully." << std::endl;

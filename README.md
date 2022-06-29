@@ -46,9 +46,10 @@ Download this repository to any folder in the analysis servers and go into the f
 git clone https://github.com/YanzhaoW/Neuland_sim.git
 cd Neuland_sim/macros
 ```
-Inside you can find a file named `sim1.C`. Simply run this macro with the following command:
+Inside you can find two macro files named `sim1.C` and `digi1.C`. Simply run these macros with the following command:
 ```shell
-root -l -q sim1.C
+root -l -q sim1.C           # simulation
+root -l -q digi1.C          # digitization
 ```
 The flag `-l` prevents root from popping up its fancy logo during the startup and the flag `-q` enables root to quit automatically when the macro is executed successfully.
 
@@ -58,8 +59,7 @@ A macro is a file that contains a definition of a function whose name should be 
 
 ### Simulation macro file
 
-To make a simulation macro run successfully, following steps need to be done in order:
-
+The file `sim1.C` in the folder `macros/` is an example of a simple simulation macro file, the main components of the code can be explained in the following parts:
 
 1. Instantiation of `FairRunSim`:
 
@@ -123,11 +123,13 @@ To make a simulation macro run successfully, following steps need to be done in 
     ```
 
 4. Initiation of `FairSimRun`:
+
     Before running the simulation, the object instantiated from `FariSimRun` needs to be initialized:
     ```cpp
     run->Init();
     ```
 5. Configuration of parameter containers:
+
     Every simulation comes with various parameters which describe multiple properties useful for the later data analysis. This may include the nodes of the detector, which is essential for later data mapping, or the magnetic field applied in the whole simulation space. Each parameter is encapsulated in a data structure called parameter container. In the end of the simulation, all parameter containers need to be stored in a separate file with:
     ```cpp
     FairParRootFileIo* parFileIO = new FairParRootFileIo(true);
@@ -140,11 +142,61 @@ To make a simulation macro run successfully, following steps need to be done in 
 Here the parameter containers would be stored in a file named `test.para.root`.
 
 6. Starting the run
+
     In the end, the simulation will be performed event by event after the following code is executed:
     ```cpp
     run->Run(eventNum);
     ```
     where `eventNum` defines how many events need to be simulated in a run.
+
+### Analysis macro file
+An analysis macro file is used to perform the analysis on the data, either obtained from the experiment or from the simulation. Some analyses can be done on the simulation data with the purpose of transforming raw simulated data points to the data points akin to experimental ones. Such analysis is called the *digitization*, which can be done with an analysis macro file. The file `digi1.C` is one example of performing a very simple digitization. The main components of the code are explained in the following parts:
+
+1. Instantiation of `FairRunAna`:
+
+    For every macro used for the data analysis, an instantiation of the derived class `FairRunAna` is needed:
+    ```cpp
+    FairRunAna run;
+    run.SetSource(new FairFileSource("test.simu.root"));
+    run.SetSink(new FairRootFileSink("test.digi.root"));
+    ```
+    The last two lines of the code specify the file from which simulated data will be read and the file to which the analyzed data will be written.
+
+2. Geometrical configuration:
+
+    Like in simulation macro file, the program needs to know the location where geometry and material files are stored, which can be done with:
+    ```cpp
+    const TString workDirectory = getenv("VMCWORKDIR");
+    gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
+    gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
+    ```
+
+3. Input of parameter file:
+
+    In the end of simulation, multiple parameter containers are written to a parameter file. Therefore, before the starting of the data analysis, that parameter file `test.para.root` need to be input with:
+    ```cpp
+    auto io = new FairParRootFileIo();
+    io->open("test.para.root");           
+    auto runtimeDb = run.GetRuntimeDb();
+    runtimeDb->setFirstInput(io);
+    ```
+
+4. Adding tasks:
+
+    Different data analysis are indicated in different tasks. Those tasks are user-defined classes derived from `FairTask` and need to overload a function called `Exec()` to perform specific data manipulation. `R3BNeulandDigitizer` is one of such classes which transforms the simulated data from NeuLAND to digitized data. It can be implemented as:
+    ```cpp
+    run.AddTask(new R3BNeulandDigitizer());
+    ```
+5. Initiation and starting of the analysis:
+    ```cpp
+    run.Init();
+    run.Run(0,0);
+    ```
+    The two parameters for `Run()` specify the start and end number of events that need to be analyzed. If both two numbers are zero, all events will be analyzed.
+
+Once the file `digi1.C` is executed, a new root file `test.digi.root` will be created. This root file contains a root tree called "NeulandHit" and multiple other histograms defined in `R3BNeulandDigitizer.cxx`. For more information, please check its [source file](https://github.com/R3BRootGroup/R3BRoot/blob/master/neuland/digitizing/R3BNeulandDigitizer.cxx) and [R3B/neuland](https://github.com/R3BRootGroup/R3BRoot/tree/master/neuland#digitizing).
+
+
 
 
 ## More information
