@@ -3,7 +3,7 @@ To download this repository, run the following command in your terminal:
 git clone https://github.com/YanzhaoW/Neuland_sim.git
 ```
 
-NOTE: To continue the following steps, an access to GSI servers is required.
+NOTE: To continue the following steps, an access to the GSI servers is required.
 ## How to run a R3BRoot Macro
 ### Sourcing  and installation
 
@@ -31,7 +31,7 @@ NOTE: To continue the following steps, an access to GSI servers is required.
     ```
     where the number `8` after `-j` in the last line represents the number of cores that are used for the compilation. You can choose any number of cores you would like.
 
-### Executing Macro files
+### Executing macro files
 Before running any macro files, make sure you have already done the following:
 
 ```shell
@@ -59,7 +59,7 @@ A macro is a file that contains a definition of a function whose name should be 
 
 ### Simulation macro file
 
-The file `sim1.C` in the folder `macros/` is an example of a simple simulation macro file, the main components of the code can be explained in the following parts:
+The file `sim1.C` in the folder `macros/` is an example of a simple simulation macro file. The main components of the code can be explained in the following parts:
 
 1. Instantiation of `FairRunSim`:
 
@@ -113,7 +113,7 @@ The file `sim1.C` in the folder `macros/` is an example of a simple simulation m
     boxGen->SetPhiRange(0., 360.);
     boxGen->SetEkinRange(0.6, 0.6);
     ```
-    The first line of these codes defines the type of the particle using its *PDG number* and the multiplicity. `SetXYZ()` is used to specify the initial position of the projectile particles while `SetThetaRange()` and `SetPhiRange()` are used to set the range of the polar and azimuthal angle of the particle momentum. Subsequently, the kinetic energy range of the particle can be set using `SetEkinRange()`. Here the project particle is defined as neutron with multiplicity equal to 4. The direction of the projectile momentum is set with a polar angle smaller than 3 degrees. And the energy of the projectiles is set to 600 MeV.
+    The first line of these codes defines the type of the particle using its *PDG number* and the multiplicity. `SetXYZ()` is used to specify the initial position of the projectile particles while `SetThetaRange()` and `SetPhiRange()` are used to set the range of the polar and azimuthal angle of the particle momentum. Subsequently, the kinetic energy range of the particle can be set using `SetEkinRange()`. Here the project particle is defined as neutron with a multiplicity equal to 4. The direction of the projectile momentum is set with a polar angle smaller than 3 degrees, and the energy of the projectiles is set to 600 MeV.
 
     To implement this particle in the simulation, the following code can be used:
     ```cpp
@@ -147,10 +147,10 @@ Here the parameter containers would be stored in a file named `test.para.root`.
     ```cpp
     run->Run(eventNum);
     ```
-    where `eventNum` defines how many events need to be simulated in a run.
+    where `eventNum` defines how many events need to be simulated in one run.
 
 ### Analysis macro file
-An analysis macro file is used to perform the analysis on the data, either obtained from the experiment or from the simulation. Some analyses can be done on the simulation data with the purpose of transforming raw simulated data points to the data points akin to experimental ones. Such analysis is called the *digitization*, which can be done with an analysis macro file. The file `digi1.C` is one example of performing a very simple digitization. The main components of the code are explained in the following parts:
+An analysis macro file is used to perform an analysis on data, either obtained from the experiment or from the simulation. Some analyses can be done on the simulation data with the purpose of transforming raw simulated data points to the data points akin to experimental ones. Such analysis is called *digitization*, which can be done with an analysis macro file. The file `digi1.C` is one example of performing a very simple digitization. The main components of the code are explained in the following parts:
 
 1. Instantiation of `FairRunAna`:
 
@@ -160,11 +160,11 @@ An analysis macro file is used to perform the analysis on the data, either obtai
     run.SetSource(new FairFileSource("test.simu.root"));
     run.SetSink(new FairRootFileSink("test.digi.root"));
     ```
-    The last two lines of the code specify the file from which simulated data will be read and the file to which the analyzed data will be written.
+    The last two lines of the code specify the file from which the simulated data will be read and the file to which the analyzed data will be written.
 
 2. Geometrical configuration:
 
-    Like in simulation macro file, the program needs to know the location where geometry and material files are stored, which can be done with:
+    As with the simulation macro file, the program needs to know the location of the geometry and material files, which can be done with:
     ```cpp
     const TString workDirectory = getenv("VMCWORKDIR");
     gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
@@ -173,7 +173,7 @@ An analysis macro file is used to perform the analysis on the data, either obtai
 
 3. Input of parameter file:
 
-    In the end of simulation, multiple parameter containers are written to a parameter file. Therefore, before the starting of the data analysis, that parameter file `test.para.root` need to be input with:
+    At the end of the simulation, multiple parameter containers are written to a parameter file. Therefore, before starting the data analysis, that parameter file `test.para.root` need to be read in with:
     ```cpp
     auto io = new FairParRootFileIo();
     io->open("test.para.root");           
@@ -183,16 +183,16 @@ An analysis macro file is used to perform the analysis on the data, either obtai
 
 4. Adding tasks:
 
-    Different data analysis are indicated in different tasks. Those tasks are user-defined classes derived from `FairTask` and need to overload a function called `Exec()` to perform specific data manipulation. `R3BNeulandDigitizer` is one of such classes which transforms the simulated data from NeuLAND to digitized data. It can be implemented as:
+    Different data analyses are manifested in different tasks. Those tasks are user-defined classes derived from `FairTask` and need to overload a function called `Exec()` to perform specific data manipulations. `R3BNeulandDigitizer` is one of such classes which transforms the simulated data from NeuLAND to digitized data. It can be implemented as:
     ```cpp
     run.AddTask(new R3BNeulandDigitizer());
     ```
-5. Initiation and starting of the analysis:
+5. Initiation and start of the analysis:
     ```cpp
     run.Init();
     run.Run(0,0);
     ```
-    The two parameters for `Run()` specify the start and end number of events that need to be analyzed. If both two numbers are zero, all events will be analyzed.
+    The two parameters for `Run()` specify the start and end number of events that need to be analyzed. If both numbers are zero, all events will be analyzed.
 
 Once the file `digi1.C` is executed, a new root file `test.digi.root` will be created. This root file contains a root tree called "NeulandHit" and multiple other histograms defined in `R3BNeulandDigitizer.cxx`. For more information, please check its [source file](https://github.com/R3BRootGroup/R3BRoot/blob/master/neuland/digitizing/R3BNeulandDigitizer.cxx) and [R3B/neuland](https://github.com/R3BRootGroup/R3BRoot/tree/master/neuland#digitizing).
 
@@ -200,7 +200,7 @@ Once the file `digi1.C` is executed, a new root file `test.digi.root` will be cr
 
 
 ## More information
-For more information about installation of `FairRoot` or `R3BRoot`, please visit following websites:
+For more information about the installation of `FairRoot` or `R3BRoot`, please visit the following websites:
 - <https://github.com/FairRootGroup/FairRoot>
 - <https://github.com/R3BRootGroup/R3BRoot>
 - <https://github.com/R3BRootGroup/R3BRoot/wiki/Installation>
