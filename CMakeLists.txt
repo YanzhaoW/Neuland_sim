@@ -29,16 +29,7 @@ add_subdirectory(digitizing)
 
 add_subdirectory(Protobuf)
 add_executable(checkout checkout.cxx)
-# # target_link_libraries(checkout ROOT::Core digitizing Proto ${R3Blibs} ${FairRootlibs} ${FairSoftlibs})
 target_link_libraries(checkout digitizing Proto ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
-# target_compile_options(checkout PRIVATE -Wno-shadow)
-# # get_property(proper TARGET checkout PROPERTY BUILD_RPATH)
-
-
-# add_executable(plot plot.cxx)
-# target_link_libraries(plot ROOT::RIO ROOT::Core ROOT::MathCore Gpad Hist Graf)
-# message(STATUS ${ROOT_LIBRARIES})
-
 
 install(
     FILES ${CMAKE_BINARY_DIR}/compile_commands.json
