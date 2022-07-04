@@ -130,8 +130,6 @@ check_compiler()
 # endif()
 
 SetBasicVariables()
-set(CMAKE_C_FLAGS ${ROOT_C_FLAGS})
-set(CMAKE_CXX_FLAGS ${ROOT_CXX_FLAGS})
 message(STATUS "cmake flags: ${CMAKE_CXX_FLAGS}")
 
 

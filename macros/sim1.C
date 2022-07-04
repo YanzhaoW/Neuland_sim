@@ -18,8 +18,8 @@ int sim1(){
     // ----------------------------Start timer--------------------------------------------
     TStopwatch* timer = new TStopwatch();
     timer->Start();
-    FairLogger::GetLogger()->SetLogVerbosityLevel("info");
-    FairLogger::GetLogger()->SetLogScreenLevel("error");
+    // FairLogger::GetLogger()->SetLogVerbosityLevel("info");
+    FairLogger::GetLogger()->SetLogScreenLevel("FATAL");
     // FairLogger::GetLogger()->SetLogToScreen(false);
     gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
     gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
@@ -52,11 +52,11 @@ int sim1(){
     // event->VerboseLevel(0);
 
     // ----------------------------Specify parameter output--------------------------------------------
-    // FairParRootFileIo* parFileIO = new FairParRootFileIo(true);
-    // parFileIO->open(parafile);
-    // auto rtdb = run->GetRuntimeDb();
-    // rtdb->setOutput(parFileIO);
-    // rtdb->saveOutput();
+    FairParRootFileIo* parFileIO = new FairParRootFileIo(true);
+    parFileIO->open(parafile);
+    auto rtdb = run->GetRuntimeDb();
+    rtdb->setOutput(parFileIO);
+    rtdb->saveOutput();
 
     // // ----------------------------start run--------------------------------------------
     run->Run(eventNum);

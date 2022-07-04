@@ -5,7 +5,7 @@ void digi1(){
     const TString workDirectory = getenv("VMCWORKDIR");
     gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
     gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
-    FairLogger::GetLogger()->SetLogScreenLevel("nolog");
+    FairLogger::GetLogger()->SetLogScreenLevel("DEBUG4");
 
     FairRunAna run;
     run.SetSource(new FairFileSource("test.simu.root"));

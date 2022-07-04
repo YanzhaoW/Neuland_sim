@@ -27,13 +27,13 @@
 #include "R3BNeulandHitProto.h"
 
 int main(int argc, char *argv[]){
-    // TStopwatch timer;
-    // timer.Start();
+    TStopwatch timer;
+    timer.Start();
 
     const TString workDirectory = "/u/yanwang/software/src/R3BRoot";
     gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
     gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
-    FairLogger::GetLogger()->SetLogScreenLevel("INFO");
+    FairLogger::GetLogger()->SetLogScreenLevel("DEBUG");
     auto run = new FairRunAna();
     run->SetSource(new FairFileSource("test.simu.root"));
     run->SetSink(new FairRootFileSink("test.digi.root"));
@@ -48,11 +48,15 @@ int main(int argc, char *argv[]){
     run->Init();
 
     run->Run(0,0);
-    // std::cout << "*************" << std::endl;
-    // timer.Stop(); 
-    // std::cout << "Macro finished successfully." << std::endl;
-    // std::cout << "Real time: " << timer.RealTime() << "s, CPU time: " << timer.CpuTime() << "s" << std::endl;
-    // delete run;
+    std::cout << "*************" << std::endl;
+    timer.Stop();
+    std::cout << "Macro finished successfully." << std::endl;
+    std::cout << "Real time: " << timer.RealTime() << "s, CPU time: " << timer.CpuTime() << "s" << std::endl;
+    LOG(DEBUG)<< "----------------exiting------------" ;
+
+    // Don't clean the run object. otherwise it will cause errors.
+    // run->Delete();
+
     return EXIT_SUCCESS;
 
 }

@@ -111,10 +111,10 @@ void R3BNeulandDigitizer::Exec(Option_t*)
             // Convert position of point to paddle-coordinates, including any rotation or translation
             const TVector3 position = point->GetPosition();
             const TVector3 converted_position = fNeulandGeoPar->ConvertToLocalCoordinates(position, paddleID);
-            LOG(DEBUG) << "NeulandDigitizer: Point in paddle " << paddleID
-                       << " with global position XYZ: " << position.X() << " " << position.Y() << " " << position.Z();
-            LOG(DEBUG) << "NeulandDigitizer: Converted to local position XYZ: " << converted_position.X() << " "
-                       << converted_position.Y() << " " << converted_position.Z();
+            // LOG(DEBUG) << "NeulandDigitizer: Point in paddle " << paddleID
+            //            << " with global position XYZ: " << position.X() << " " << position.Y() << " " << position.Z();
+            // LOG(DEBUG) << "NeulandDigitizer: Converted to local position XYZ: " << converted_position.X() << " "
+            //            << converted_position.Y() << " " << converted_position.Z();
 
             // Within the paddle frame, the relevant distance of the light from the pmt is always given by the
             // X-Coordinate
@@ -207,7 +207,7 @@ void R3BNeulandDigitizer::Exec(Option_t*)
         }
     } // loop over paddles
 
-    LOG(DEBUG) << "R3BNeulandDigitizer: produced " << fHits.Size() << " hits";
+    // LOG(DEBUG) << "R3BNeulandDigitizer: produced " << fHits.Size() << " hits";
 }
 
 void R3BNeulandDigitizer::FinishEvent(){
