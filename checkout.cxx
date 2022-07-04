@@ -27,32 +27,32 @@
 #include "R3BNeulandHitProto.h"
 
 int main(int argc, char *argv[]){
-    TStopwatch timer;
-    timer.Start();
+    // TStopwatch timer;
+    // timer.Start();
 
-    const TString workDirectory = "/data/ywang/software/R3BRoot";
+    const TString workDirectory = "/u/yanwang/software/src/R3BRoot";
     gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
     gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
     FairLogger::GetLogger()->SetLogScreenLevel("INFO");
-    FairRunAna run;
-    run.SetSource(new FairFileSource("test.simu.root"));
-    run.SetSink(new FairRootFileSink("test.digi.root"));
+    auto run = new FairRunAna();
+    run->SetSource(new FairFileSource("test.simu.root"));
+    run->SetSink(new FairRootFileSink("test.digi.root"));
 
     auto io = new FairParRootFileIo();
     io->open("test.para.root");           
-    auto runtimeDb = run.GetRuntimeDb();
+    auto runtimeDb = run->GetRuntimeDb();
     runtimeDb->setFirstInput(io);
 
-    std::cout << "---------------------" << std::endl;
-    run.AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTamex()));
+    run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTamex()));
     // run.AddTask(new R3BNeulandHitProto(argv[1]));
-    run.Init();
+    run->Init();
 
-    run.Run(0,0);
-    std::cout << "*************" << std::endl;
-    timer.Stop(); 
-    std::cout << "Macro finished successfully." << std::endl;
-    std::cout << "Real time: " << timer.RealTime() << "s, CPU time: " << timer.CpuTime() << "s" << std::endl;
+    run->Run(0,0);
+    // std::cout << "*************" << std::endl;
+    // timer.Stop(); 
+    // std::cout << "Macro finished successfully." << std::endl;
+    // std::cout << "Real time: " << timer.RealTime() << "s, CPU time: " << timer.CpuTime() << "s" << std::endl;
+    // delete run;
     return EXIT_SUCCESS;
 
 }

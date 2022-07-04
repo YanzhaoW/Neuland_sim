@@ -7,6 +7,7 @@
 #include "TCAConnector.h"
 #include "NeulandHit.pb.h"
 #include "FairRunAna.h"
+#include <fstream>
 
 
 class R3BNeulandHitProto : public FairTask {

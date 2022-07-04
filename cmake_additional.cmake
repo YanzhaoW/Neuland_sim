@@ -23,10 +23,34 @@ set(CMAKE_MODULE_PATH "${SIMPATH}/lib/VGM-4.5.0/Modules" ${CMAKE_MODULE_PATH})
 set(CMAKE_PREFIX_PATH ${SIMPATH} ${CMAKE_PREFIX_PATH})
 set(CMAKE_MODULE_PATH "${R3BRoot}/cmake/modules" ${CMAKE_MODULE_PATH})
 
+Set(CheckSrcDir "${FAIRROOTPATH}/share/fairbase/cmake/checks")
 
-find_package(ROOT REQUIRED PATHS ${SIMPATH} )
 
-# find_package(CLHEP MODULE REQUIRED PATHS ${SIMPATH}/lib/VGM-4.5.0/Modules)
+find_package(FairRoot REQUIRED)
+
+include(CheckCXX11Features)
+include(FairMacros)
+
+# set(ROOT_CONFIG_DEBUG true)
+find_package(ROOT REQUIRED COMPONENTS Geom PATHS ${SIMPATH} )
+find_package(Geant4 REQUIRED PATHS ${SIMPATH}/lib)
+
+find_package(Geant4VMC REQUIRED)
+if(Geant4VMC_FOUND)
+  Set(Geant4VMC_LIBRARY_DIR "${Geant4VMC_DIR}/${Geant4VMC_CMAKE_INSTALL_LIBDIR}")
+  Set(Geant4VMC_SHARE_DIR "${Geant4VMC_DIR}/share")
+  find_path(Geant4VMC_MACRO_DIR NAMES g4libs.C PATHS
+    "${Geant4VMC_SHARE_DIR}/Geant4VMC-${Geant4VMC_VERSION}/examples/macro"
+    NO_DEFAULT_PATH
+  )
+Endif()
+
+
+
+set(GEANT4_LIBRARY_DIR "${SIMPATH}/lib")
+set(Geant4_DIR "${SIMPATH}/lib/Geant4-10.5.1")
+set(Geant4_INCLUDE_DIRS "${Geant4_INCLUDE_DIRS}")
+
 find_package(CLHEP MODULE REQUIRED)
 
 # Now set them to FairRoot_LIBRARIES
@@ -48,7 +72,7 @@ if(FAIRROOT_LIBRARIES)
 endif()
 
 
-# Now set them to FairRoot_LIBRARIES
+# Now set them to FairSoft_LIBRARIES
 set(FAIRSOFT_LIBRARY_DIR "${SIMPATH}/lib")
 set(FAIRSOFT_LIBRARIES)
 if(MSVC)
@@ -57,7 +81,6 @@ if(MSVC)
 endif()
 foreach(_cpt ${FairSoftlibs})
     find_library(FAIRSOFT_${_cpt}_LIBRARY ${_cpt} HINTS ${FAIRSOFT_LIBRARY_DIR})
-    message(STATUS "library: ${FAIRSOFT_${_cpt}_LIBRARY}")
     if(FAIRSOFT_${_cpt}_LIBRARY)
         mark_as_advanced(FAIRSOFT_${_cpt}_LIBRARY)
         list(APPEND FAIRSOFT_LIBRARIES ${FAIRSOFT_${_cpt}_LIBRARY})
@@ -69,32 +92,32 @@ endif()
 
 list(APPEND FAIRSOFT_LIBRARIES ${CLHEP_LIBRARIES})
 
+# Now set them to R3BRoot_Libraries
+set(R3BROOT_LIBRARY_DIR "${R3BROOT}/lib")
+set(R3BROOT_LIBRARIES)
+if(MSVC)
+  set(CMAKE_FIND_LIBRARY_PREFIXES "lib")
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ".lib" ".dll")
+endif()
+foreach(_cpt ${R3Blibs})
+    find_library(R3BROOT_${_cpt}_LIBRARY ${_cpt} HINTS ${R3BROOT_LIBRARY_DIR})
+    if(R3BROOT_${_cpt}_LIBRARY)
+        mark_as_advanced(R3BROOT_${_cpt}_LIBRARY)
+        list(APPEND R3BROOT_LIBRARIES ${R3BROOT_${_cpt}_LIBRARY})
+    endif()
+endforeach()
+if(R3BROOT_LIBRARIES)
+  list(REMOVE_DUPLICATES R3BROOT_LIBRARIES)
+endif()
 
 
 
 
 
 
+include(CheckCompiler)
 
-
-# find_package(FairCMakeModules 0.1)
-# if(FairCMakeModules_FOUND)
-#   include(FairFindPackage2)
-# else()
-#   message(STATUS "Could not find FairCMakeModules. ")
-# endif()
-
-# if(COMMAND find_package2)
-#   find_package2(PUBLIC FairRoot)
-# else()
-#   find_package(FairRoot)
-# endif()
-
-# include(FairMacros)
-# include(CheckCompiler)
-
-# find_package2(PUBLIC ROOT  VERSION 6.10.00  REQUIRED PATHS ${SIMPATH} )
-# check_compiler()
+check_compiler()
 
 # if(DEFINED $ENV{WERROR} AND $ENV{WERROR})
 #   message(STATUS "Will compile with -Werror. ")
@@ -106,4 +129,9 @@ list(APPEND FAIRSOFT_LIBRARIES ${CLHEP_LIBRARIES})
 #   endif()
 # endif()
 
-# SetBasicVariables()
+SetBasicVariables()
+set(CMAKE_C_FLAGS ${ROOT_C_FLAGS})
+set(CMAKE_CXX_FLAGS ${ROOT_CXX_FLAGS})
+message(STATUS "cmake flags: ${CMAKE_CXX_FLAGS}")
+
+

@@ -20,6 +20,9 @@
 #include "R3BFieldPar.h"
 #include "R3BNeulandField.h"
 
+
+
+
 class Initilizer {
    private:
     TStopwatch* timer{new TStopwatch};
@@ -32,11 +35,11 @@ class Initilizer {
     FairParRootFileIo* parFileIO{new FairParRootFileIo(true)};
     R3BNeulandField* magField = new R3BNeulandField();
 
-    const TString workDirectory = "/data/ywang/software/R3BRoot";
+    const TString workDirectory = "/u/yanwang/software/src/R3BRoot";
     const TString simufile = "test.simu.root";
     const TString parafile = "test.para.root";
     const Int_t eventNum = 100;
-    const Int_t printEventNum = 100;
+    const Int_t printEventNum = 20;
 
    public:
     Initilizer() {
@@ -45,7 +48,6 @@ class Initilizer {
         // FairLogger::GetLogger()->SetLogToScreen(false);
         gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
         gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
-        gSystem->Setenv("G4FORCENUMBEROFTHREADS", "4");
     };
     void timer_start() { timer->Start(); }
 

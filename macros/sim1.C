@@ -18,8 +18,8 @@ int sim1(){
     // ----------------------------Start timer--------------------------------------------
     TStopwatch* timer = new TStopwatch();
     timer->Start();
-    FairLogger::GetLogger()->SetLogVerbosityLevel("verylow");
-    FairLogger::GetLogger()->SetLogScreenLevel("nolog");
+    FairLogger::GetLogger()->SetLogVerbosityLevel("info");
+    FairLogger::GetLogger()->SetLogScreenLevel("error");
     // FairLogger::GetLogger()->SetLogToScreen(false);
     gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
     gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
@@ -52,16 +52,16 @@ int sim1(){
     // event->VerboseLevel(0);
 
     // ----------------------------Specify parameter output--------------------------------------------
-    FairParRootFileIo* parFileIO = new FairParRootFileIo(true);
-    parFileIO->open(parafile);
-    auto rtdb = run->GetRuntimeDb();
-    rtdb->setOutput(parFileIO);
-    rtdb->saveOutput();
+    // FairParRootFileIo* parFileIO = new FairParRootFileIo(true);
+    // parFileIO->open(parafile);
+    // auto rtdb = run->GetRuntimeDb();
+    // rtdb->setOutput(parFileIO);
+    // rtdb->saveOutput();
 
-    // ----------------------------start run--------------------------------------------
+    // // ----------------------------start run--------------------------------------------
     run->Run(eventNum);
 
-    // ----------------------------stop the timer--------------------------------------------
+    // // ----------------------------stop the timer--------------------------------------------
     timer->Stop();
     std::cout << "CPU time: " << timer->CpuTime() << std::endl;
 
