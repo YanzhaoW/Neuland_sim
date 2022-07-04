@@ -32,7 +32,7 @@ class Initilizer {
     FairParRootFileIo* parFileIO{new FairParRootFileIo(true)};
     R3BNeulandField* magField = new R3BNeulandField();
 
-    const TString workDirectory = "/data/ywang/software/R3BRoot";
+    const TString workDirectory = "/data/ywang/software/src/R3BRoot";
     const TString simufile = "test.simu.root";
     const TString parafile = "test.para.root";
     const Int_t eventNum = 100;

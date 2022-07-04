@@ -1,8 +1,8 @@
 # set(Protobuf_PREFIX_PATH
 #     "${HOME}/software/src/protobuf-3.20.1/" )
 # list(APPEND CMAKE_PREFIX_PATH "${Protobuf_PREFIX_PATH}")
-set( Protobuf_INCLUDE_DIR "/home/ywang/.local/include")
-set(OtherLibs ROOT::Core ROOT::MathCore R3BData VMCLibrary Physics R3Bbase R3BNeulandShared Hist)
+set( Protobuf_INCLUDE_DIR "${SIMPATH}/include")
+set(OtherLibs ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
 # find_package(Protobuf REQUIRED PATH "${HOME}/software/src/protobuf-3.20.1/cmake")
 find_package(Protobuf REQUIRED)
 

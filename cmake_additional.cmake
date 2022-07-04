@@ -25,10 +25,11 @@ set(CMAKE_PREFIX_PATH ${SIMPATH} ${CMAKE_PREFIX_PATH})
 set(CMAKE_MODULE_PATH "${R3BRoot}/cmake/modules" ${CMAKE_MODULE_PATH})
 
 
-find_package(ROOT REQUIRED PATHS ${SIMPATH} )
+find_package(ROOT REQUIRED PATHS ${SIMPATH}/cmake )
 
 # find_package(CLHEP MODULE REQUIRED PATHS ${SIMPATH}/lib/VGM-4.5.0/Modules)
 find_package(CLHEP REQUIRED PATHS ${SIMPATH})
+find_package(Geant4 REQUIRED PATHS ${SIMPATH}/lib)
 
 # Now set them to FairRoot_LIBRARIES
 set(FAIRROOT_LIBRARY_DIR "${FAIRROOTPATH}/lib")
@@ -49,7 +50,7 @@ if(FAIRROOT_LIBRARIES)
 endif()
 
 
-# Now set them to FairRoot_LIBRARIES
+# Now set them to FairSoft_LIBRARIES
 set(FAIRSOFT_LIBRARY_DIR "${SIMPATH}/lib")
 set(FAIRSOFT_LIBRARIES)
 if(MSVC)
@@ -58,7 +59,6 @@ if(MSVC)
 endif()
 foreach(_cpt ${FairSoftlibs})
     find_library(FAIRSOFT_${_cpt}_LIBRARY ${_cpt} HINTS ${FAIRSOFT_LIBRARY_DIR})
-    message(STATUS "library: ${FAIRSOFT_${_cpt}_LIBRARY}")
     if(FAIRSOFT_${_cpt}_LIBRARY)
         mark_as_advanced(FAIRSOFT_${_cpt}_LIBRARY)
         list(APPEND FAIRSOFT_LIBRARIES ${FAIRSOFT_${_cpt}_LIBRARY})
@@ -70,26 +70,29 @@ endif()
 
 list(APPEND FAIRSOFT_LIBRARIES ${CLHEP_LIBRARIES})
 
+# Now set them to R3BRoot_Libraries
+set(R3BROOT_LIBRARY_DIR "${R3BROOT}/lib")
+set(R3BROOT_LIBRARIES)
+if(MSVC)
+  set(CMAKE_FIND_LIBRARY_PREFIXES "lib")
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ".lib" ".dll")
+endif()
+foreach(_cpt ${R3Blibs})
+    find_library(R3BROOT_${_cpt}_LIBRARY ${_cpt} HINTS ${R3BROOT_LIBRARY_DIR})
+    if(R3BROOT_${_cpt}_LIBRARY)
+        mark_as_advanced(R3BROOT_${_cpt}_LIBRARY)
+        list(APPEND R3BROOT_LIBRARIES ${R3BROOT_${_cpt}_LIBRARY})
+    endif()
+endforeach()
+if(R3BROOT_LIBRARIES)
+  list(REMOVE_DUPLICATES R3BROOT_LIBRARIES)
+endif()
 
 
 
 
 
 
-
-
-# find_package(FairCMakeModules 0.1)
-# if(FairCMakeModules_FOUND)
-#   include(FairFindPackage2)
-# else()
-#   message(STATUS "Could not find FairCMakeModules. ")
-# endif()
-
-# if(COMMAND find_package2)
-#   find_package2(PUBLIC FairRoot)
-# else()
-#   find_package(FairRoot)
-# endif()
 
 include(FairMacros)
 include(CheckCompiler)

@@ -30,7 +30,7 @@ int main(int argc, char *argv[]){
     TStopwatch timer;
     timer.Start();
 
-    const TString workDirectory = "/data/ywang/software/R3BRoot";
+    const TString workDirectory = "/data/ywang/software/src/R3BRoot";
     gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
     gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
     FairLogger::GetLogger()->SetLogScreenLevel("INFO");
