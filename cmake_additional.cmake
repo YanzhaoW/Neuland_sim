@@ -1,4 +1,5 @@
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(USE_DIFFERENT_COMPILER ON)
 
 IF(NOT DEFINED ENV{FAIRROOTPATH})
   MESSAGE(FATAL_ERROR "You did not define the environment variable FAIRROOTPATH which is needed to find FairRoot. Please set this variable and execute cmake again.")
@@ -27,7 +28,7 @@ set(CMAKE_MODULE_PATH "${R3BRoot}/cmake/modules" ${CMAKE_MODULE_PATH})
 find_package(ROOT REQUIRED PATHS ${SIMPATH} )
 
 # find_package(CLHEP MODULE REQUIRED PATHS ${SIMPATH}/lib/VGM-4.5.0/Modules)
-find_package(CLHEP MODULE REQUIRED)
+find_package(CLHEP REQUIRED PATHS ${SIMPATH})
 
 # Now set them to FairRoot_LIBRARIES
 set(FAIRROOT_LIBRARY_DIR "${FAIRROOTPATH}/lib")
@@ -90,20 +91,20 @@ list(APPEND FAIRSOFT_LIBRARIES ${CLHEP_LIBRARIES})
 #   find_package(FairRoot)
 # endif()
 
-# include(FairMacros)
-# include(CheckCompiler)
+include(FairMacros)
+include(CheckCompiler)
 
 # find_package2(PUBLIC ROOT  VERSION 6.10.00  REQUIRED PATHS ${SIMPATH} )
-# check_compiler()
+check_compiler()
 
-# if(DEFINED $ENV{WERROR} AND $ENV{WERROR})
-#   message(STATUS "Will compile with -Werror. ")
-#   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wno-error=sign-compare -Wno-error=reorder -Wno-error=unused-variable -Wno-error=unused-but-set-variable")
-# else()
-#   if (NOT APPLE)
-#     message(STATUS "Set env WERROR to 1 to enable -Werror. If origin/dev compiles on your platform with that option, it is definitly a good idea to do that.")
-#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-sign-compare -Wno-reorder -Wno-unused-variable -Wno-unused-but-set-variable")
-#   endif()
-# endif()
+if(DEFINED $ENV{WERROR} AND $ENV{WERROR})
+  message(STATUS "Will compile with -Werror. ")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wno-error=sign-compare -Wno-error=reorder -Wno-error=unused-variable -Wno-error=unused-but-set-variable")
+else()
+  if (NOT APPLE)
+    message(STATUS "Set env WERROR to 1 to enable -Werror. If origin/dev compiles on your platform with that option, it is definitly a good idea to do that.")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-sign-compare -Wno-reorder -Wno-unused-variable -Wno-unused-but-set-variable")
+  endif()
+endif()
 
-# SetBasicVariables()
+SetBasicVariables()

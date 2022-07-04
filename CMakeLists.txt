@@ -24,6 +24,7 @@ include_directories(
     "${SIMPATH}/include" 
     # "${SIMPATH}/include/vmc" 
     "${SIMPATH}/include/geant4vmc" 
+    "${SIMPATH}/include/vmc" 
     "${SIMPATH}/include/Geant4" 
     "${SIMPATH}/include/root6"
     "${R3BROOT}/include" 
