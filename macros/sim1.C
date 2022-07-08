@@ -19,7 +19,7 @@ int sim1(){
     TStopwatch* timer = new TStopwatch();
     timer->Start();
     // FairLogger::GetLogger()->SetLogVerbosityLevel("info");
-    FairLogger::GetLogger()->SetLogScreenLevel("FATAL");
+    FairLogger::GetLogger()->SetLogScreenLevel("ERROR");
     // FairLogger::GetLogger()->SetLogToScreen(false);
     gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
     gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
