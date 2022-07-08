@@ -49,3 +49,4 @@ _deps
 
 macros/*.root
 .cache
+parameters/allParams*
