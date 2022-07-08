@@ -35,12 +35,9 @@ target_compile_options(checkout PRIVATE -Wno-shadow)
 add_executable(reader reader.cxx)
 target_link_libraries(reader ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
 
-
-
 # add_executable(plot plot.cxx)
 # target_link_libraries(plot ROOT::RIO ROOT::Core ROOT::MathCore Gpad Hist Graf)
 # message(STATUS ${ROOT_LIBRARIES})
-
 
 install(
     FILES ${CMAKE_BINARY_DIR}/compile_commands.json
