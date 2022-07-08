@@ -1,4 +1,3 @@
-#include <cstdlib>
 #include <iostream>
 #include <fstream>
 
@@ -57,7 +56,7 @@ int main(int argc, char *argv[]){
     // Don't clean the run object. otherwise it will cause errors.
     // run->Delete();
 
-    return EXIT_SUCCESS;
+    return 0;
 
 }
 

@@ -6,7 +6,7 @@ set(R3Blibs R3BPassive R3BBase R3BNeulandSimulation R3BData R3BGen R3BNeulandSha
 set(FairRootlibs FairTools Base Gen TrkBase ParBase GeoBase FairLogger EventDisplay )
 Set(FairSoftlibs geant4vmc)
 
-include(${CMAKE_SOURCE_DIR}/cmake_additional.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake_modules/cmake_additional.cmake)
 
 include_directories(
     "${FAIRROOTPATH}/include"
