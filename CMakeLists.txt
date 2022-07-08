@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.13.4)
 
 project(testing)
 
-set(R3Blibs R3BPassive R3BBase R3BNeulandSimulation R3BData R3BGen R3BNeulandShared Field R3BTracking)
+set(R3Blibs R3BPassive R3BBase R3BNeulandSimulation R3BData R3BGen R3BNeulandShared Field R3BTracking R3Bsource R3BNeulandCalibration R3BLos R3BPsp R3BTCal)
 set(FairRootlibs FairTools Base Gen TrkBase ParBase GeoBase FairLogger EventDisplay )
-Set(FairSoftlibs G4geometry G4physicslists geant4vmc G4run G4event)
+Set(FairSoftlibs geant4vmc)
 
 include(${CMAKE_SOURCE_DIR}/cmake_additional.cmake)
 
@@ -13,26 +13,28 @@ include_directories(
     "${CMAKE_SOURCE_DIR}/neuland"
     "${CMAKE_SOURCE_DIR}/digitizing"
     "${SIMPATH}/include" 
-    # "${SIMPATH}/include/vmc" 
     "${SIMPATH}/include/geant4vmc" 
     "${SIMPATH}/include/Geant4" 
     "${SIMPATH}/include/root6"
     "${R3BROOT}/include" 
-    # "${R3BRoot}/r3bgen"
+    "${ucesb_INCLUDE_DIR}"
     )
 
+# making simulation executable:
 add_executable(simulate simulate.cxx)
 target_link_libraries(simulate digitizing ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
 
-
+# make digitization executable:
 add_subdirectory(digitizing)
-
 add_subdirectory(Protobuf)
 add_executable(checkout checkout.cxx)
-# # target_link_libraries(checkout ROOT::Core digitizing Proto ${R3Blibs} ${FairRootlibs} ${FairSoftlibs})
 target_link_libraries(checkout digitizing Proto ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
-# target_compile_options(checkout PRIVATE -Wno-shadow)
-# # get_property(proper TARGET checkout PROPERTY BUILD_RPATH)
+target_compile_options(checkout PRIVATE -Wno-shadow)
+
+# making experimental data reader executable:
+add_executable(reader reader.cxx)
+target_link_libraries(reader ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
+
 
 
 # add_executable(plot plot.cxx)

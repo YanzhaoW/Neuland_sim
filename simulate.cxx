@@ -38,13 +38,13 @@ class Initilizer {
     const TString workDirectory = "/u/yanwang/software/src/R3BRoot";
     const TString simufile = "test.simu.root";
     const TString parafile = "test.para.root";
-    const Int_t eventNum = 2;
-    const Int_t printEventNum = 1;
+    const Int_t eventNum = 20;
+    const Int_t printEventNum = 4;
 
    public:
     Initilizer() {
         // FairLogger::GetLogger()->SetLogVerbosityLevel("verylow");
-        FairLogger::GetLogger()->SetLogScreenLevel("DEBUG");
+        FairLogger::GetLogger()->SetLogScreenLevel("ERROR");
         // FairLogger::GetLogger()->SetLogToScreen(false);
         gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
         gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");

@@ -33,7 +33,7 @@ int main(int argc, char *argv[]){
     const TString workDirectory = "/u/yanwang/software/src/R3BRoot";
     gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
     gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
-    FairLogger::GetLogger()->SetLogScreenLevel("DEBUG");
+    FairLogger::GetLogger()->SetLogScreenLevel("ERROR");
     auto run = new FairRunAna();
     run->SetSource(new FairFileSource("test.simu.root"));
     run->SetSink(new FairRootFileSink("test.digi.root"));
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]){
     timer.Stop();
     std::cout << "Macro finished successfully." << std::endl;
     std::cout << "Real time: " << timer.RealTime() << "s, CPU time: " << timer.CpuTime() << "s" << std::endl;
-    LOG(DEBUG)<< "----------------exiting------------" ;
+    // LOG(DEBUG)<< "----------------exiting------------" ;
 
     // Don't clean the run object. otherwise it will cause errors.
     // run->Delete();

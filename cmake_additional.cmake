@@ -17,23 +17,26 @@ ENDIF(NOT DEFINED ENV{R3BROOTPATH})
 SET(R3BROOT $ENV{R3BROOTPATH})
 
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules" ${CMAKE_MODULE_PATH})
 set(CMAKE_MODULE_PATH "${FAIRROOTPATH}/share/fairbase/cmake/modules" ${CMAKE_MODULE_PATH})
 set(CMAKE_MODULE_PATH "${FAIRROOTPATH}/share/fairbase/cmake/modules_old" ${CMAKE_MODULE_PATH})
 set(CMAKE_MODULE_PATH "${SIMPATH}/lib/VGM-4.5.0/Modules" ${CMAKE_MODULE_PATH})
+# set(CMAKE_MODULE_PATH "${SIMPATH}/share/cmake-3.13/Modules" ${CMAKE_MODULE_PATH})
 set(CMAKE_PREFIX_PATH ${SIMPATH} ${CMAKE_PREFIX_PATH})
 set(CMAKE_MODULE_PATH "${R3BRoot}/cmake/modules" ${CMAKE_MODULE_PATH})
 
 Set(CheckSrcDir "${FAIRROOTPATH}/share/fairbase/cmake/checks")
 
 
-find_package(FairRoot REQUIRED)
-
 include(CheckCXX11Features)
 include(FairMacros)
 
 # set(ROOT_CONFIG_DEBUG true)
+find_package(FairRoot REQUIRED)
+find_package(ucesb REQUIRED)
 find_package(ROOT REQUIRED COMPONENTS Geom PATHS ${SIMPATH} )
 find_package(Geant4 REQUIRED PATHS ${SIMPATH}/lib)
+
 
 find_package(Geant4VMC REQUIRED)
 if(Geant4VMC_FOUND)
@@ -44,7 +47,6 @@ if(Geant4VMC_FOUND)
     NO_DEFAULT_PATH
   )
 Endif()
-
 
 
 set(GEANT4_LIBRARY_DIR "${SIMPATH}/lib")
@@ -60,11 +62,14 @@ if(MSVC)
   set(CMAKE_FIND_LIBRARY_PREFIXES "lib")
   set(CMAKE_FIND_LIBRARY_SUFFIXES ".lib" ".dll")
 endif()
-foreach(_cpt ${FairRootlibs})
+foreach(_cpt ${FairRootlibs} ${Geant4_LIBRARIES})
     find_library(FAIRROOT_${_cpt}_LIBRARY ${_cpt} HINTS ${FAIRROOT_LIBRARY_DIR})
+    # message(STATUS "FairSoft: ${FAIRROOT_${_cpt}_LIBRARY}")
     if(FAIRROOT_${_cpt}_LIBRARY)
         mark_as_advanced(FAIRROOT_${_cpt}_LIBRARY)
         list(APPEND FAIRROOT_LIBRARIES ${FAIRROOT_${_cpt}_LIBRARY})
+    else()
+        message(FATAL_ERROR "library ${_cpt} from ${FAIRROOT_LIBRARY_DIR} is not found!")
     endif()
 endforeach()
 if(FAIRROOT_LIBRARIES)
@@ -109,6 +114,9 @@ endforeach()
 if(R3BROOT_LIBRARIES)
   list(REMOVE_DUPLICATES R3BROOT_LIBRARIES)
 endif()
+
+find_library(UCESB_LIBRARY ${ucesb_LIBRARY_SHARED} HINTS ${ucesb_LIBRARY_DIR})
+list(APPEND R3BROOT_LIBRARIES ${UCESB_LIBRARY})
 
 
 
