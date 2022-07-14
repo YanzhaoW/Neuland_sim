@@ -37,6 +37,8 @@ find_package(ucesb REQUIRED)
 find_package(ROOT REQUIRED COMPONENTS Geom PATHS ${SIMPATH} )
 find_package(Geant4 REQUIRED PATHS ${SIMPATH}/lib)
 
+# message(STATUS "use file: ${ROOT_USE_FILE}")
+include(${ROOT_USE_FILE})
 
 find_package(Geant4VMC REQUIRED)
 if(Geant4VMC_FOUND)

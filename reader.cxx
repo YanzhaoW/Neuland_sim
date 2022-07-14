@@ -20,7 +20,6 @@
 #include "FairRuntimeDb.h"
 #include <iostream>
 
-
 struct EXT_STR_h101_t
 {
     EXT_STR_h101_unpack_t unpack;
@@ -41,13 +40,22 @@ int main()
     const Int_t nev = -1;     /* number of events to read, -1 - until CTRL+C */
     const Int_t trigger = -1; // 1 - onspill, 2 - offspill. -1 - all
 
-    const TString filename = "/d/land4/202205_s522/lmd/main0122_0021.lmd";
+    const TString filename = "/d/land4/202205_s522/lmd/main0142_0023.lmd";
+
+
+
+
+
+
     
     const TString ucesbPath = "/u/land/fake_cvmfs/9.13/upexps/202205_s522/202205_s522";
     // const TString usesbCall = ucesbPath + " --allow-errors --input-buffer=135Mi";
-    const TString usesbCall = ucesbPath + " --allow-errors --input-buffer=135Mi  --max-events=100";
+    const TString usesbCall = ucesbPath + " --allow-errors --input-buffer=135Mi  --max-events=1000000";
 
     const TString outputFileName = "output.root";
+    FairLogger::GetLogger()->SetLogScreenLevel("ERROR");
+
+
 
     // Event IO Setup
     // -------------------------------------------
@@ -114,7 +122,7 @@ int main()
     nlhit->SetGlobalTimeOffset(-400);//5850
     nlhit->SetEnergyCutoff(0.0);
     run->AddTask(nlhit);
-    
+
     // auto r3bNeulandOnlineSpectra = new R3BNeulandOnlineSpectra();
     // r3bNeulandOnlineSpectra->SetDistanceToTarget(distanceToTarget);
     // r3bNeulandOnlineSpectra->SetCosmicTpat(0x2000);
@@ -123,7 +131,6 @@ int main()
     // Go!
     // -------------------------------------------
     run->Init();
-    FairLogger::GetLogger()->SetLogScreenLevel("ERROR");
     run->Run((nev < 0) ? nev : 0, (nev < 0) ? 0 : nev);
 
     timer.Stop();
