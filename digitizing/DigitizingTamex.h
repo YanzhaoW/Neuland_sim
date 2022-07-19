@@ -39,16 +39,16 @@ class Channel : public Digitizing::Channel {
     ~Channel() override = default;
     void AddHit(Double_t mcTime, Double_t mcLight, Double_t dist) override;
     bool HasFired() const override;
-    Double_t GetQDC() const override;
-    Double_t GetTDC() const override;
-    Double_t GetEnergy() const override;
+    Double_t GetQDC(UShort_t index=0) const override;
+    Double_t GetTDC(UShort_t index=0) const override;
+    Double_t GetEnergy(UShort_t index=0) const override;
     Int_t GetNHits() const override;
-    std::vector<Digitizing::PMTHit> GetPMTHits() const; 
+    // std::vector<Digitizing::PMTHit> GetPMTHits() const; 
 
    private:
-    mutable Validated<Double_t> cachedQDC;
-    mutable Validated<Double_t> cachedTDC;
-    mutable Validated<Double_t> cachedEnergy;
+    mutable std::vector<Validated<Double_t>> cachedQDC;
+    mutable std::vector<Validated<Double_t>> cachedTDC;
+    mutable std::vector<Validated<Double_t>> cachedEnergy;
     const Tamex::Params& par;
 };
 

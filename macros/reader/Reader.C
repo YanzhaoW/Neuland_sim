@@ -25,7 +25,7 @@ void Reader()
     
     const TString ucesbPath = "/u/land/fake_cvmfs/9.13/upexps/202205_s522/202205_s522";
     // const TString usesbCall = ucesbPath + " --allow-errors --input-buffer=135Mi";
-    const TString usesbCall = ucesbPath + " --allow-errors --input-buffer=135Mi  --max-events=100";
+    const TString usesbCall = ucesbPath + " --allow-errors --input-buffer=135Mi  --max-events=10000000";
 
     const TString outputFileName = "output.root";
 
@@ -95,15 +95,16 @@ void Reader()
     nlhit->SetEnergyCutoff(0.0);
     run->AddTask(nlhit);
     
-    // auto r3bNeulandOnlineSpectra = new R3BNeulandOnlineSpectra();
-    // r3bNeulandOnlineSpectra->SetDistanceToTarget(distanceToTarget);
-    // r3bNeulandOnlineSpectra->SetCosmicTpat(0x2000);
-    // run->AddTask(r3bNeulandOnlineSpectra);
+    auto r3bNeulandOnlineSpectra = new R3BNeulandOnlineSpectra();
+    r3bNeulandOnlineSpectra->SetDistanceToTarget(distanceToTarget);
+    r3bNeulandOnlineSpectra->SetCosmicTpat(0x2000);
+    run->AddTask(r3bNeulandOnlineSpectra);
     
     // Go!
     // -------------------------------------------
     run->Init();
-    FairLogger::GetLogger()->SetLogScreenLevel("ERROR");
+    FairLogger::GetLogger()->SetLogScreenLevel("INFO");
+    // LOG(INFO) <<"is https on: " <<  (bool)run->GetHttpServer();
     run->Run((nev < 0) ? nev : 0, (nev < 0) ? 0 : nev);
 
     timer.Stop();

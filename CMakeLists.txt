@@ -24,7 +24,7 @@ include_directories(
 
 # making simulation executable:
 add_executable(simulate simulate.cxx)
-target_link_libraries(simulate digitizing ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
+target_link_libraries(simulate ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
 
 # make digitization executable:
 add_subdirectory(digitizing)
@@ -36,7 +36,8 @@ add_subdirectory(R3BCalibration)
 
 
 add_executable(checkout checkout.cxx)
-target_link_libraries(checkout calibration digitizing Proto ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
+# target_link_libraries(checkout calibration digitizing Proto ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
+target_link_libraries(checkout calibration digitizing ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
 target_compile_options(checkout PRIVATE -Wno-shadow)
 
 # making experimental data reader executable:

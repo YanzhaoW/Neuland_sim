@@ -32,15 +32,14 @@ Tamex::Params::Params()
       ,
       fRnd(new TRandom3()) {}
 
-Tamex::Channel::Channel(const Tamex::Params& p) : par(p) {}
+Tamex::Channel::Channel(const Tamex::Params& p) : Digitizing::Channel(1), par(p) {}
 
 void Tamex::Channel::AddHit(Double_t mcTime, Double_t mcLight, Double_t dist) {
     fPMTHits.emplace_back(mcTime, mcLight, dist);
-    std::sort(fPMTHits.begin(), fPMTHits.end());
 
-    cachedQDC.invalidate();
-    cachedTDC.invalidate();
-    cachedEnergy.invalidate();
+    cachedQDC.push_back(Validated<Double_t>());
+    cachedTDC.push_back(Validated<Double_t>());
+    cachedEnergy.push_back(Validated<Double_t>());
 }
 
 bool Tamex::Channel::HasFired() const {
@@ -48,59 +47,72 @@ bool Tamex::Channel::HasFired() const {
     if (fPMTHits.size() == 0) {
         return false;
     } else {
-        hasFired = (fPMTHits.back().light > par.fPMTThresh);
+        // hasFired = (fPMTHits.back().light > par.fPMTThresh);
+        hasFired = std::any_of(fPMTHits.begin(), fPMTHits.end(), [this](Digitizing::PMTHit e){return e.light > par.fPMTThresh;});
     }
     return hasFired;
 }
 
 Int_t Tamex::Channel::GetNHits() const { return fPMTHits.size(); }
 
-std::vector<Digitizing::PMTHit> Tamex::Channel::GetPMTHits() const {return fPMTHits;}
-
-Double_t Tamex::Channel::GetQDC() const {
+Double_t Tamex::Channel::GetQDC(UShort_t index) const {
     if (!HasFired()) {
         LOG(ERROR)
             << "Error: Cannot get QDC values from unfired NeuLAND paddle!";
         return 0;
     }
 
-    if (!cachedQDC.valid()) {
-        // get the maximum signal with light depostion
-        Double_t l = fPMTHits.back().light;
+    if (!cachedQDC[index].valid()) {
+        // get light depostion
+        Double_t l = fPMTHits[index].light;
 
         // apply PMT saturation
         l = l / (1. + par.fSaturationCoefficient * l);
 
         // apply energy smearing
         l = par.fRnd->Gaus(l, par.fEResRel * l);
-        cachedQDC.set(l);
+
+        //set qdc to zero if below PMT threshold
+        l = (l > par.fPMTThresh)? l : 0.0;
+
+        cachedQDC[index].set(l);
     }
-    return cachedQDC.get();
+    return cachedQDC[index].get();
 }
 
-Double_t Tamex::Channel::GetTDC() const {
+Double_t Tamex::Channel::GetTDC(UShort_t index) const {
     if (!HasFired()) {
         LOG(ERROR)
             << "Error: Cannot get TDC values from unfired NeuLAND paddle!";
         return 0;
     }
-    if (!cachedTDC.valid()) {
-        cachedTDC.set(fPMTHits.back().time + par.fRnd->Gaus(0., par.fTimeRes));
+    if (!cachedTDC[index].valid()) {
+        cachedTDC[index].set(fPMTHits.back().time + par.fRnd->Gaus(0., par.fTimeRes));
     }
 
-    return cachedTDC.get();
+    return cachedTDC[index].get();
 }
 
-Double_t Tamex::Channel::GetEnergy() const {
-    Double_t e = GetQDC();
-    // Apply reverse saturation
-    if (par.fExperimentalDataIsCorrectedForSaturation) {
-        e = e / (1. - par.fSaturationCoefficient * e);
+Double_t Tamex::Channel::GetEnergy(UShort_t index) const {
+    if (!HasFired()) {
+        LOG(ERROR)
+            << "Error: Cannot get energy values from unfired NeuLAND paddle!";
+        return 0;
     }
-    // Apply reverse attenuation
-    e = e * exp((2. * (Digitizing::Paddle::gHalfLength)) *
-                Digitizing::Paddle::gAttenuation / 2.);
-    return e;
+
+    if (!cachedEnergy[index].valid()) {
+        Double_t e = GetQDC(index);
+
+        // Apply reverse saturation
+        if (par.fExperimentalDataIsCorrectedForSaturation) {
+            e = e / (1. - par.fSaturationCoefficient * e);
+        }
+        // Apply reverse attenuation
+        e = e * exp((2. * (Digitizing::Paddle::gHalfLength)) *
+                    Digitizing::Paddle::gAttenuation / 2.);
+        cachedEnergy[index].set(e);
+    }
+    return cachedEnergy[index].get();
 }
 
 DigitizingTamex::DigitizingTamex() : fTmP(Tamex::Params()) {

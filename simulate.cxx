@@ -18,7 +18,7 @@
 #include "TSystem.h"
 #include "FairFieldFactory.h"
 #include "R3BFieldPar.h"
-#include "R3BNeulandField.h"
+// #include "R3BNeulandField.h"
 
 
 
@@ -33,7 +33,7 @@ class Initilizer {
     R3BCave* cave{nullptr};
     R3BNeuland* neuland{nullptr};
     FairParRootFileIo* parFileIO{new FairParRootFileIo(true)};
-    R3BNeulandField* magField = new R3BNeulandField();
+    // R3BNeulandField* magField = new R3BNeulandField();
 
     const TString workDirectory = "/u/yanwang/software/src/R3BRoot";
     const TString simufile = "test.simu.root";
@@ -56,9 +56,9 @@ class Initilizer {
         std::cout << "CPU time: " << timer->CpuTime() << std::endl;
     }
 
-    void create_field() {
-        run->SetField(magField);
-    }
+    // void create_field() {
+    //     run->SetField(magField);
+    // }
     void run_config() {
         run->SetName("TGeant4");
         run->SetStoreTraj(false);

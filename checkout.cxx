@@ -23,9 +23,45 @@
 #include "TStopwatch.h"
 #include "TString.h"
 #include "TSystem.h"
-#include "R3BNeulandHitProto.h"
+// #include "R3BNeulandHitProto.h"
 #include "NeulandCalTesting.h"
 #include "R3BNeulandOnlineSpectra.h"
+
+int main(int argc, char *argv[]){
+    TStopwatch timer;
+    timer.Start();
+
+    const TString workDirectory = "/u/yanwang/software/src/R3BRoot";
+    gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
+    gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
+    FairLogger::GetLogger()->SetLogScreenLevel("ERROR");
+    auto run = new FairRunAna();
+    run->SetSource(new FairFileSource("test.simu.root"));
+    run->SetSink(new FairRootFileSink("test.digi.root"));
+
+    auto io = new FairParRootFileIo();
+    io->open("test.para.root");          
+    auto runtimeDb = run->GetRuntimeDb();
+    runtimeDb->setFirstInput(io);
+
+    run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTamex()));
+    // run->AddTask(new NeulandCalTesting());
+    // run.AddTask(new R3BNeulandHitProto(argv[1]));
+    run->Init();
+
+    run->Run(0,0);
+    std::cout << "*************" << std::endl;
+    timer.Stop();
+    std::cout << "Macro finished successfully." << std::endl;
+    std::cout << "Real time: " << timer.RealTime() << "s, CPU time: " << timer.CpuTime() << "s" << std::endl;
+    // LOG(DEBUG)<< "----------------exiting------------" ;
+
+    // Don't clean the run object. otherwise it will cause errors.
+    // run->Delete();
+
+    return 0;
+
+}
 
 // int main(int argc, char *argv[]){
 //     TStopwatch timer;
@@ -36,16 +72,33 @@
 //     gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
 //     FairLogger::GetLogger()->SetLogScreenLevel("ERROR");
 //     auto run = new FairRunAna();
-//     run->SetSource(new FairFileSource("test.simu.root"));
-//     run->SetSink(new FairRootFileSink("test.digi.root"));
+//     run->SetSource(new FairFileSource("output.root"));
+//     run->SetSink(new FairRootFileSink("test.cal.root"));
 
-//     auto io = new FairParRootFileIo();
-//     io->open("test.para.root");           
-//     auto runtimeDb = run->GetRuntimeDb();
-//     runtimeDb->setFirstInput(io);
+
+//     auto rtdb = run->GetRuntimeDb();
+
+//     auto parList = new TList();
+//     parList->Add(new TObjString("../parameters/loscalpar_v1.root"));
+//     parList->Add(new TObjString("../parameters/params_tcal_180522xx.root"));
+//     parList->Add(new TObjString("../parameters/params_sync_s522_0999_310522x.root"));
+//  
+//     auto parIO = new FairParRootFileIo(false);
+//     
+//     parIO->open(parList);
+//     rtdb->setFirstInput(parIO);
+
+//     rtdb->addRun(999);
+//     rtdb->getContainer("LosTCalPar");
+//     rtdb->setInputVersion(999, (char*)"LosTCalPar", 1, 1);
+//     rtdb->getContainer("LandTCalPar");
+//     rtdb->setInputVersion(999, (char*)"LandTCalPar", 1, 1);
+//     rtdb->getContainer("NeulandHitPar");
+//     rtdb->setInputVersion(999, (char*)"NeulandHitPar", 1, 1);
 
 //     // run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTamex()));
-//     run->AddTask(new NeulandCalTesting());
+//     run->AddTask(new R3BNeulandOnlineSpectra());
+//     // run->AddTask(new NeulandCalTesting());
 //     // run.AddTask(new R3BNeulandHitProto(argv[1]));
 //     run->Init();
 
@@ -63,58 +116,9 @@
 
 // }
 
-int main(int argc, char *argv[]){
-    TStopwatch timer;
-    timer.Start();
-
-    const TString workDirectory = "/u/yanwang/software/src/R3BRoot";
-    gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
-    gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
-    FairLogger::GetLogger()->SetLogScreenLevel("ERROR");
-    auto run = new FairRunAna();
-    run->SetSource(new FairFileSource("output.root"));
-    run->SetSink(new FairRootFileSink("test.cal.root"));
 
 
-    auto rtdb = run->GetRuntimeDb();
 
-    auto parList = new TList();
-    parList->Add(new TObjString("../parameters/loscalpar_v1.root"));
-    parList->Add(new TObjString("../parameters/params_tcal_180522xx.root"));
-    parList->Add(new TObjString("../parameters/params_sync_s522_0999_310522x.root"));
- 
-    auto parIO = new FairParRootFileIo(false);
-    
-    parIO->open(parList);
-    rtdb->setFirstInput(parIO);
-
-    rtdb->addRun(999);
-    rtdb->getContainer("LosTCalPar");
-    rtdb->setInputVersion(999, (char*)"LosTCalPar", 1, 1);
-    rtdb->getContainer("LandTCalPar");
-    rtdb->setInputVersion(999, (char*)"LandTCalPar", 1, 1);
-    rtdb->getContainer("NeulandHitPar");
-    rtdb->setInputVersion(999, (char*)"NeulandHitPar", 1, 1);
-
-    // run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTamex()));
-    // run->AddTask(new R3BNeulandOnlineSpectra());
-    run->AddTask(new NeulandCalTesting());
-    // run.AddTask(new R3BNeulandHitProto(argv[1]));
-    run->Init();
-
-    run->Run(0,0);
-    std::cout << "*************" << std::endl;
-    timer.Stop();
-    std::cout << "Macro finished successfully." << std::endl;
-    std::cout << "Real time: " << timer.RealTime() << "s, CPU time: " << timer.CpuTime() << "s" << std::endl;
-    // LOG(DEBUG)<< "----------------exiting------------" ;
-
-    // Don't clean the run object. otherwise it will cause errors.
-    // run->Delete();
-
-    return 0;
-
-}
 // class mytask : public FairTask{
 //     public:
 //         mytask(TString input = "NeulandHits", TString output = "mytask", const Option_t* option = ""):fHits{input}, fOut{output}{}

@@ -13,12 +13,10 @@
 
 #include "R3BNeulandDigitizer.h"
 #include "DigitizingTacQuila.h"
-#include "DigitizingTamex.h"
 #include "FairLogger.h"
 #include "FairRootManager.h"
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
-#include "FairEventHeader.h"
 #include <TFile.h>
 #include "TGeoManager.h"
 #include "TGeoNode.h"
@@ -28,7 +26,6 @@
 #include "TString.h"
 #include <iostream>
 #include <stdexcept>
-#include <set>
 
 R3BNeulandDigitizer::R3BNeulandDigitizer(TString input, TString output)
     : R3BNeulandDigitizer(new Neuland::DigitizingTacQuila(), std::move(input), std::move(output))
@@ -59,11 +56,6 @@ void R3BNeulandDigitizer::SetParContainers()
         return;
     }
 
-    auto containers = rtdb->getListOfContainers();
-    for(auto const &it: *containers){
-    std::cout << "runtimedb: " << it->GetName() << std::endl;
-    }
-
     fNeulandGeoPar = (R3BNeulandGeoPar*)rtdb->getContainer("R3BNeulandGeoPar");
     if (!fNeulandGeoPar)
     {
@@ -86,13 +78,6 @@ InitStatus R3BNeulandDigitizer::Init()
     hElossVSQDC->GetXaxis()->SetTitle("Deposited Energy [MeV]");
     hElossVSQDC->GetYaxis()->SetTitle("Paddle QDC [a.u.]");
 
-    hNHits = new TH1F("hNHits", "Number of events for numbers of hits on the same paddle", 20, 0.5, 20.5);
-    hElightPri = new TH1F("hElightPri", "light depostion for primary hits", 300, 0.0, 50.0);
-    hElightSec = new TH1F("hElightSec", "light depostion for secondary hits", 300, 0.0, 50.0);
-
-    hTimeDiff = new TH1F("hTimeDiff", "time difference", 400, -10.0, 10.0);
-    hELightDiff = new TH1F("hELightDiff", "light intensity difference", 300, 0, 50.0);
-
     return kSUCCESS;
 }
 
@@ -111,10 +96,10 @@ void R3BNeulandDigitizer::Exec(Option_t*)
             // Convert position of point to paddle-coordinates, including any rotation or translation
             const TVector3 position = point->GetPosition();
             const TVector3 converted_position = fNeulandGeoPar->ConvertToLocalCoordinates(position, paddleID);
-            // LOG(DEBUG) << "NeulandDigitizer: Point in paddle " << paddleID
-            //            << " with global position XYZ: " << position.X() << " " << position.Y() << " " << position.Z();
-            // LOG(DEBUG) << "NeulandDigitizer: Converted to local position XYZ: " << converted_position.X() << " "
-            //            << converted_position.Y() << " " << converted_position.Z();
+            LOG(DEBUG) << "NeulandDigitizer: Point in paddle " << paddleID
+                       << " with global position XYZ: " << position.X() << " " << position.Y() << " " << position.Z();
+            LOG(DEBUG) << "NeulandDigitizer: Converted to local position XYZ: " << converted_position.X() << " "
+                       << converted_position.Y() << " " << converted_position.Z();
 
             // Within the paddle frame, the relevant distance of the light from the pmt is always given by the
             // X-Coordinate
@@ -144,36 +129,12 @@ void R3BNeulandDigitizer::Exec(Option_t*)
     {
         const Int_t paddleID = kv.first;
         const auto& paddle = kv.second;
-
-
         if (paddle->HasFired())
         {
             hRLTimeToTrig->Fill(paddle->GetLeftChannel()->GetTDC() - triggerTime);
             hRLTimeToTrig->Fill(paddle->GetRightChannel()->GetTDC() - triggerTime);
             hElossVSQDC->Fill(paddleEnergyDeposit[paddleID], paddle->GetEnergy());
         }
-    }
-
-    // adding hit counting histogram
-    for (const auto& kv : paddles)
-    {
-        const Int_t paddleID = kv.first;
-        const auto& paddle = kv.second;
-        if (paddle->HasFired())
-        {
-            hNHits->Fill(paddle->GetLeftChannel()->GetNHits());
-            hNHits->Fill(paddle->GetRightChannel()->GetNHits());
-
-            for(auto it:paddle->GetChannels()){
-                if(it->GetNHits() < 2) continue;
-                auto fPMTHits = dynamic_cast<const Neuland::Tamex::Channel*>(it)->GetPMTHits();
-                hElightPri->Fill(fPMTHits.end()[-1].light);
-                hElightSec->Fill(fPMTHits.end()[-2].light);
-                hTimeDiff->Fill(fPMTHits.end()[-1].time-fPMTHits.end()[-2].time);
-                hELightDiff->Fill(fPMTHits.end()[-1].light - fPMTHits.end()[-2].light);
-            }
-        }
-
     }
 
     // Create Hits
@@ -207,11 +168,7 @@ void R3BNeulandDigitizer::Exec(Option_t*)
         }
     } // loop over paddles
 
-    // LOG(DEBUG) << "R3BNeulandDigitizer: produced " << fHits.Size() << " hits";
-}
-
-void R3BNeulandDigitizer::FinishEvent(){
-    EventN++;
+    LOG(DEBUG) << "R3BNeulandDigitizer: produced " << fHits.Size() << " hits";
 }
 
 void R3BNeulandDigitizer::Finish()
@@ -226,14 +183,8 @@ void R3BNeulandDigitizer::Finish()
     hMultTwo->Write();
     hRLTimeToTrig->Write();
     hElossVSQDC->Write();
-    // HisList->SetName("HisList");
-    hNHits->Write();
-    hElightPri->Write();
-    hElightSec->Write();
-    hTimeDiff->Write();
-    hELightDiff->Write();
 
     gDirectory = tmp;
 }
 
-// ClassImp(R3BNeulandDigitizer);
+ClassImp(R3BNeulandDigitizer);

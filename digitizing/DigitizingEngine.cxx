@@ -14,7 +14,7 @@
 #include "DigitizingEngine.h"
 #include <algorithm>
 #include <cmath>
-#include <iostream>
+#include "FairLogger.h"
 
 namespace Neuland
 {
@@ -48,16 +48,52 @@ namespace Neuland
                    (!fLeftChannel->HasFired() && fRightChannel->HasFired());
         }
 
-        Double_t Paddle::GetEnergy() const { return std::sqrt(fLeftChannel->GetEnergy() * fRightChannel->GetEnergy()); }
-
-        Double_t Paddle::GetTime() const
-        {
-            return (fLeftChannel->GetTDC() + fRightChannel->GetTDC()) / 2. - gHalfLength / gCMedium;
+        Double_t Paddle::GetEnergy(UShort_t index ) const { 
+            UShort_t nhits = GetNHits();
+            if (nhits < (index + 1))
+                return 0.0;
+            if (nhits == 1)
+                // for backward compatibility
+                return std::sqrt(fLeftChannel->GetEnergy() * fRightChannel->GetEnergy());
+            else{
+                return std::sqrt(fLeftChannel->GetEnergy(index) * fRightChannel->GetEnergy(index));
+                }
         }
 
-        Double_t Paddle::GetPosition() const
+        Double_t Paddle::GetTime(UShort_t index) const
         {
-            return (fRightChannel->GetTDC() - fLeftChannel->GetTDC()) / 2. * gCMedium;
+            UShort_t nhits = GetNHits();
+            if (nhits < (index + 1))
+                return 0.0;
+            if (nhits == 1)
+                // for backward compatibility
+                return (fLeftChannel->GetTDC() + fRightChannel->GetTDC()) / 2. - gHalfLength / gCMedium;
+            else{
+                return (fLeftChannel->GetTDC(index) + fRightChannel->GetTDC(index)) / 2. - gHalfLength / gCMedium;
+                }
+        }
+
+        Double_t Paddle::GetPosition(UShort_t index) const
+        {
+            UShort_t nhits = GetNHits();
+            if (nhits < (index + 1))
+                return 0.0;
+            if (nhits == 1)
+                // for backward compatibility
+                return (fRightChannel->GetTDC() - fLeftChannel->GetTDC()) / 2. * gCMedium;
+            else{
+                return (fRightChannel->GetTDC(index) - fLeftChannel->GetTDC(index)) / 2. * gCMedium;
+                }
+        }
+
+        const UShort_t Paddle::GetNHits() const {
+            if (fRightChannel->GetNHits() != fLeftChannel->GetNHits()){
+                LOG(ERROR) << "DigitizingEngine: nhits from both side of PMTs don't match!";
+                return 0;
+            }
+            else{
+                return fRightChannel->GetNHits();
+            }
         }
     } // namespace Digitizing
 
@@ -80,7 +116,6 @@ namespace Neuland
         for (const auto& kv : paddles)
         {
             const auto& paddle = kv.second;
-            // std::cout << "-----------++++++++++++++++" << std::endl;
 
             // TODO: Should be easier with std::min?
             if (paddle->GetLeftChannel()->HasFired() && paddle->GetLeftChannel()->GetTDC() < triggerTime)

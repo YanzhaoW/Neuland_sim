@@ -28,12 +28,7 @@ namespace Neuland
             Double_t time;
             Double_t light;
 
-            bool operator<(const PMTHit& rhs) const { return (light < rhs.light); }
-
-            // bool operator<(const PMTHit& rhs) const { return (time < rhs.time); }
-            // bool operator>(const PMTHit& rhs) const { return (time > rhs.time); }
-            // bool operator<(const Double_t& rhs) const { return (time < rhs); }
-            // bool operator>(const Double_t& rhs) const { return (time > rhs); }
+            bool operator<(const PMTHit& rhs) const { return (time < rhs.time); }
 
             PMTHit() = default;
             PMTHit(Double_t mcTime, Double_t mcLight, Double_t dist);
@@ -42,16 +37,23 @@ namespace Neuland
         class Channel
         {
           public:
+            Channel(bool multi = 0): has_multi(multi){};
             virtual ~Channel() = default; // FIXME: Root doesn't like pure virtual destructors (= 0;)
             virtual void AddHit(Double_t mcTime, Double_t mcLight, Double_t dist) = 0;
             virtual bool HasFired() const = 0;
-            virtual Double_t GetQDC() const = 0;
-            virtual Double_t GetTDC() const = 0;
-            virtual Double_t GetEnergy() const = 0;
+            virtual Double_t GetQDC(UShort_t index) const;
+            virtual Double_t GetTDC(UShort_t index) const;
+            virtual Double_t GetEnergy(UShort_t index) const;
             virtual Int_t GetNHits() const {return 0;};
+
+            // for backward compatibility
+            virtual Double_t GetQDC() const;
+            virtual Double_t GetTDC() const;
+            virtual Double_t GetEnergy() const;
 
           protected:
             std::vector<PMTHit> fPMTHits;
+            bool has_multi;
         };
 
         class Paddle
@@ -62,13 +64,13 @@ namespace Neuland
 
             bool HasFired() const;
             bool HasHalfFired() const;
-            Double_t GetEnergy() const;
-            Double_t GetTime() const;
-            Double_t GetPosition() const;
+            Double_t GetEnergy(UShort_t index = 0) const;
+            Double_t GetTime(UShort_t index = 0) const;
+            Double_t GetPosition(UShort_t index = 0) const;
+            const UShort_t GetNHits() const;
 
             const Channel* GetLeftChannel() const { return fLeftChannel.get(); }
             const Channel* GetRightChannel() const { return fRightChannel.get(); }
-            const std::vector<Channel*> GetChannels() const {return {fLeftChannel.get(), fRightChannel.get()};}
 
           protected:
             std::unique_ptr<Channel> fLeftChannel;

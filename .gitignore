@@ -49,4 +49,5 @@ _deps
 
 macros/*.root
 .cache
-parameters/allParams*
+allParams*
+output*
