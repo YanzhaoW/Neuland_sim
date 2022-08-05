@@ -38,8 +38,8 @@ class Initilizer {
     const TString workDirectory = "/u/yanwang/software/src/R3BRoot";
     const TString simufile = "test.simu.root";
     const TString parafile = "test.para.root";
-    const Int_t eventNum = 20;
-    const Int_t printEventNum = 4;
+    const Int_t eventNum = 200;
+    const Int_t printEventNum = 10;
 
    public:
     Initilizer() {

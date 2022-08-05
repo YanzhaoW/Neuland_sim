@@ -8,6 +8,7 @@
 #include "R3BTrloiiTpatReader.h"
 #include "R3BLosReader.h"
 #include "R3BNeulandTamexReader.h"
+#include "FairRootFileSink.h"
 
 #include "FairRunOnline.h"
 #include "FairRun.h"
@@ -40,20 +41,15 @@ int main()
     const Int_t nev = -1;     /* number of events to read, -1 - until CTRL+C */
     const Int_t trigger = -1; // 1 - onspill, 2 - offspill. -1 - all
 
-    const TString filename = "/d/land4/202205_s522/lmd/main0142_0023.lmd";
+    const TString filename = "/d/land4/202205_s522/lmd/main0142_002*.lmd";
 
-
-
-
-
-
-    
     const TString ucesbPath = "/u/land/fake_cvmfs/9.13/upexps/202205_s522/202205_s522";
     // const TString usesbCall = ucesbPath + " --allow-errors --input-buffer=135Mi";
-    const TString usesbCall = ucesbPath + " --allow-errors --input-buffer=135Mi  --max-events=1000000";
+    // const TString usesbCall = ucesbPath + " --allow-errors --input-buffer=135Mi  --max-events=100";
+    const TString usesbCall = ucesbPath + " --allow-errors --input-buffer=135Mi";
 
     const TString outputFileName = "output.root";
-    FairLogger::GetLogger()->SetLogScreenLevel("ERROR");
+    FairLogger::GetLogger()->SetLogScreenLevel("INFO");
 
 
 
@@ -73,8 +69,8 @@ int main()
     auto run = new FairRunOnline(source);
     run->SetRunId(999);
     // run->ActivateHttpServer(1, 8885);
-	run->SetOutputFile(outputFileName.Data());
-    // run->SetSink(new FairRootFileSink(outputFileName));
+	// run->SetOutputFile(outputFileName.Data());
+    run->SetSink(new FairRootFileSink(outputFileName));
 
     // Parameter IO Setup
     // -------------------------------------------
@@ -132,6 +128,11 @@ int main()
     // -------------------------------------------
     run->Init();
     run->Run((nev < 0) ? nev : 0, (nev < 0) ? 0 : nev);
+
+    // include this otherwie it will get errors
+    LOG(INFO) << "writing root file...";
+    auto sink = run->GetSink();
+    sink->Close();
 
     timer.Stop();
     Double_t rtime = timer.RealTime();

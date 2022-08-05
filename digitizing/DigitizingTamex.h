@@ -13,6 +13,13 @@
 
 #ifndef R3BROOT_DIGITIZINGTAMEX_H
 #define R3BROOT_DIGITIZINGTAMEX_H
+/**
+ * NeuLAND Tamex digitizing module with multiple hits per event
+ * @author Yanzhao Wang
+ * @since July 15, 2022
+ *
+ *
+ */
 
 #include "DigitizingEngine.h"
 #include "TRandom3.h"
@@ -39,9 +46,9 @@ class Channel : public Digitizing::Channel {
     ~Channel() override = default;
     void AddHit(Double_t mcTime, Double_t mcLight, Double_t dist) override;
     bool HasFired() const override;
-    Double_t GetQDC(UShort_t index=0) const override;
-    Double_t GetTDC(UShort_t index=0) const override;
-    Double_t GetEnergy(UShort_t index=0) const override;
+    Double_t GetQDC(UShort_t index) const override;
+    Double_t GetTDC(UShort_t index) const override;
+    Double_t GetEnergy(UShort_t index) const override;
     Int_t GetNHits() const override;
     // std::vector<Digitizing::PMTHit> GetPMTHits() const; 
 

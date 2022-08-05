@@ -16,7 +16,6 @@
 #include <cmath>
 #include <memory>
 #include <stdexcept>
-#include <iostream>
 
 namespace Neuland
 {
@@ -177,7 +176,6 @@ namespace Neuland
     DigitizingTacQuila::DigitizingTacQuila()
         : fTQP(TacQuila::Params())
     {
-        std::cout << "initial fTmp:" << fTQP.fPMTThresh << std::endl;
     }
 
     std::unique_ptr<Digitizing::Channel> DigitizingTacQuila::BuildChannel()

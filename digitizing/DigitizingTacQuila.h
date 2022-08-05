@@ -17,7 +17,6 @@
 #include "DigitizingEngine.h"
 #include "TRandom3.h"
 #include "Validated.h"
-#include <iostream>
 
 namespace Neuland
 {

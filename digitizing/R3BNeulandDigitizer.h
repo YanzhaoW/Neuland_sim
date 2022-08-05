@@ -56,7 +56,6 @@ class R3BNeulandDigitizer : public FairTask
 
   protected:
     InitStatus Init() override;
-    void FinishEvent() override;
     void Finish() override;
     void SetParContainers() override;
 
@@ -74,19 +73,13 @@ class R3BNeulandDigitizer : public FairTask
 
     R3BNeulandGeoPar* fNeulandGeoPar; // non-owning
 
-    Int_t EventN = 0;
     TH1F* hMultOne;
     TH1F* hMultTwo;
     TH1F* hRLTimeToTrig;
     TH2F* hElossVSQDC;
-    TH1F* hNHits;
-    TH1F* hElightPri;
-    TH1F* hElightSec;
-    TH1F* hTimeDiff;
-    TH1F* hELightDiff;
 
-  // public:
-    // ClassDefOverride(R3BNeulandDigitizer, 0)
+  public:
+    ClassDefOverride(R3BNeulandDigitizer, 0)
 };
 
 #endif // R3B_NEULAND_DIGITIZER_H

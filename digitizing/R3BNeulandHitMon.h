@@ -81,6 +81,8 @@ class R3BNeulandHitMon : public FairTask
     TH2D* hPosVSEnergy;
     TH2D* hdeltaEE;
     TH1D* hBeta;
+
+    ClassDefOverride(R3BNeulandHitMon, 0);
 };
 
 #endif // R3BNEULANDHITMON_H

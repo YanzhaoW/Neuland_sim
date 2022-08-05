@@ -18,6 +18,7 @@
 #include <map>
 #include <memory>
 #include <vector>
+#include "FairLogger.h"
 
 namespace Neuland
 {
@@ -37,23 +38,21 @@ namespace Neuland
         class Channel
         {
           public:
-            Channel(bool multi = 0): has_multi(multi){};
             virtual ~Channel() = default; // FIXME: Root doesn't like pure virtual destructors (= 0;)
             virtual void AddHit(Double_t mcTime, Double_t mcLight, Double_t dist) = 0;
             virtual bool HasFired() const = 0;
-            virtual Double_t GetQDC(UShort_t index) const;
-            virtual Double_t GetTDC(UShort_t index) const;
-            virtual Double_t GetEnergy(UShort_t index) const;
-            virtual Int_t GetNHits() const {return 0;};
+            virtual Double_t GetQDC(UShort_t index) const {return GetQDC();}
+            virtual Double_t GetTDC(UShort_t index) const {return GetTDC();}
+            virtual Double_t GetEnergy(UShort_t index) const {return GetEnergy();}
+            virtual Int_t GetNHits() const {return 1;};
 
             // for backward compatibility
-            virtual Double_t GetQDC() const;
-            virtual Double_t GetTDC() const;
-            virtual Double_t GetEnergy() const;
+            virtual Double_t GetQDC() const {return GetQDC(0);}
+            virtual Double_t GetTDC() const {return GetTDC(0);}
+            virtual Double_t GetEnergy() const {return GetEnergy(0);}
 
           protected:
             std::vector<PMTHit> fPMTHits;
-            bool has_multi;
         };
 
         class Paddle

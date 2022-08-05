@@ -199,7 +199,7 @@ void R3BNeulandMapped2Cal::MakeCal()
         // Convert TDC to [ns] leading
         if (!(par = fTcalPar->GetModuleParAt(iPlane, iBar, edge)))
         {
-            LOG(DEBUG) << "R3BNeulandTcal::Exec : Tcal par not found, barId: " << iBar << ", side: " << iSide;
+            LOG(WARN) << "R3BNeulandTcal::Exec : Tcal par not found, barId: " << iBar << ", side: " << iSide;
             continue;
         }
 
@@ -209,7 +209,7 @@ void R3BNeulandMapped2Cal::MakeCal()
         // Convert TDC to [ns] trailing
         if (!(par = fTcalPar->GetModuleParAt(iPlane, iBar, edge + 1)))
         {
-            LOG(DEBUG) << "R3BNeulandTcal::Exec : Tcal par not found, barId: " << iBar << ", side: " << iSide;
+            LOG(WARN) << "R3BNeulandTcal::Exec : Tcal par not found, barId: " << iBar << ", side: " << iSide;
             continue;
         }
 
@@ -218,7 +218,7 @@ void R3BNeulandMapped2Cal::MakeCal()
 
         if (timeLE < 0. || timeLE > fClockFreq || timeTE < 0. || timeTE > fClockFreq)
         {
-            LOG(ERROR) << "R3BNeulandMapped2Tcal::Exec : error in time calibration: ch= " << iPlane << iBar << iSide
+            LOG(WARN) << "R3BNeulandMapped2Tcal::Exec : error in time calibration: ch= " << iPlane << " "<< iBar<< " " << iSide
                        << ", tdc= " << tdc << ", time leading edge = " << timeLE << ", time trailing edge = " << timeTE;
             continue;
         }

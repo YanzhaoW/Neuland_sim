@@ -49,41 +49,17 @@ namespace Neuland
         }
 
         Double_t Paddle::GetEnergy(UShort_t index ) const { 
-            UShort_t nhits = GetNHits();
-            if (nhits < (index + 1))
-                return 0.0;
-            if (nhits == 1)
-                // for backward compatibility
-                return std::sqrt(fLeftChannel->GetEnergy() * fRightChannel->GetEnergy());
-            else{
-                return std::sqrt(fLeftChannel->GetEnergy(index) * fRightChannel->GetEnergy(index));
-                }
+            return std::sqrt(fLeftChannel->GetEnergy(index) * fRightChannel->GetEnergy(index));
         }
 
         Double_t Paddle::GetTime(UShort_t index) const
         {
-            UShort_t nhits = GetNHits();
-            if (nhits < (index + 1))
-                return 0.0;
-            if (nhits == 1)
-                // for backward compatibility
-                return (fLeftChannel->GetTDC() + fRightChannel->GetTDC()) / 2. - gHalfLength / gCMedium;
-            else{
-                return (fLeftChannel->GetTDC(index) + fRightChannel->GetTDC(index)) / 2. - gHalfLength / gCMedium;
-                }
+            return (fLeftChannel->GetTDC(index) + fRightChannel->GetTDC(index)) / 2. - gHalfLength / gCMedium;
         }
 
         Double_t Paddle::GetPosition(UShort_t index) const
         {
-            UShort_t nhits = GetNHits();
-            if (nhits < (index + 1))
-                return 0.0;
-            if (nhits == 1)
-                // for backward compatibility
-                return (fRightChannel->GetTDC() - fLeftChannel->GetTDC()) / 2. * gCMedium;
-            else{
-                return (fRightChannel->GetTDC(index) - fLeftChannel->GetTDC(index)) / 2. * gCMedium;
-                }
+            return (fRightChannel->GetTDC(index) - fLeftChannel->GetTDC(index)) / 2. * gCMedium;
         }
 
         const UShort_t Paddle::GetNHits() const {
