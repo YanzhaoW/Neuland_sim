@@ -27,9 +27,10 @@ include_directories(
 
 # making simulation executable:
 add_executable(simulate simulate.cxx)
-target_link_libraries(simulate ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
+target_link_libraries(simulate neuland ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
 
 # make digitization executable:
+add_subdirectory(neuland)
 add_subdirectory(share)
 add_subdirectory(digitizing)
 add_subdirectory(calibration)
@@ -43,12 +44,12 @@ add_subdirectory(test)
 
 add_executable(checkout checkout.cxx)
 # target_link_libraries(checkout calibration digitizing Proto ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
-target_link_libraries(checkout test share online calibration digitizing ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
+target_link_libraries(checkout neuland test share online calibration digitizing ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
 target_compile_options(checkout PRIVATE -Wno-shadow)
 
 # making experimental data reader executable:
 add_executable(reader reader.cxx)
-target_link_libraries(reader R3BCalibration ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
+target_link_libraries(reader neuland R3BCalibration ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
 
 # add_executable(plot plot.cxx)
 # target_link_libraries(plot ROOT::RIO ROOT::Core ROOT::MathCore Gpad Hist Graf)

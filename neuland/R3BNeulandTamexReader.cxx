@@ -74,6 +74,7 @@ Bool_t R3BNeulandTamexReader::Init(ext_data_struct_info* a_struct_info)
     // Register output arrays in tree
     FairRootManager::Instance()->Register("NeulandMappedData", "Neuland", fArray, !fOnline);
     FairRootManager::Instance()->Register("NeulandTrigMappedData", "Neuland", fArrayTrigger, !fOnline);
+    LOG(ERROR) << "program running here";
     Reset();
     memset(fData, 0, sizeof *fData);
 

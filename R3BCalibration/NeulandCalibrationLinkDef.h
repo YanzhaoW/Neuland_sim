@@ -23,7 +23,11 @@
 #pragma link C++ class R3BNeulandMappedHist+;
 #pragma link C++ class R3BNeulandMapped2Cal+;
 #pragma link C++ class R3BNeulandMapped2CalPar+;
+#pragma link C++ class R3BNeulandTacquilaMapped2Cal+;
+#pragma link C++ class R3BNeulandTacquilaMapped2CalPar+;
+#pragma link C++ class R3BNeulandTacquilaMapped2QCalPar+;
 #pragma link C++ class R3BNeulandHitHist+;
+//#pragma link C++ class R3BNeulandCalTest+;
 #pragma link C++ class R3BNeulandCal2Hit+;
 #pragma link C++ class R3BNeulandCal2HitPar+;
 #pragma link C++ class R3BNeulandParFact+;

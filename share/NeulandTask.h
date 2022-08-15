@@ -6,6 +6,7 @@
 class TCanvas;
 class TApplication;
 class TList;
+class TH1;
 
 class NeulandTask : public FairTask{
     public:
@@ -13,6 +14,7 @@ class NeulandTask : public FairTask{
         NeulandTask(const char *name, Int_t iVerbose=1);
         ~NeulandTask();
         void Register(TCanvas* c);
+        void Register(TH1*);
         void Plot(Int_t event_gap = 1000);
 
     private:

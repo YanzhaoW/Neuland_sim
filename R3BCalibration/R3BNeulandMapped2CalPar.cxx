@@ -78,6 +78,11 @@ InitStatus R3BNeulandMapped2CalPar::Init()
     {
         return kFATAL;
     }
+    fHitsTrigger = (TClonesArray*)rm->GetObject("NeulandTrigMappedData");
+    if (!fHitsTrigger)
+    {
+        return kFATAL;
+    }
 
     // container needs to be created in tcal/R3BTCalContFact.cxx AND R3BTCal needs
     // to be set as dependency in CMakelists.txt (in this case in the land directory)
@@ -179,6 +184,23 @@ void R3BNeulandMapped2CalPar::Exec(Option_t* option)
             std::cout << iPlane << "b     " << iBar << "   " << iSide << std::endl;
             std::cout << checkcounts << std::endl;
         }
+    }
+
+    // Loop over mapped triggers
+    nHits = fHitsTrigger->GetEntriesFast();
+    for (Int_t i = 0; i < nHits; i++)
+    {
+        auto hit = (R3BPaddleTamexMappedData*)fHitsTrigger->At(i);
+        if (!hit)
+        {
+            continue;
+        }
+
+        // Check bar ID
+        auto iBar = hit->GetBarId();
+        auto iFine = hit->fFineTime1LE;
+
+        fEngine->Fill(100, iBar, 10, iFine);
     }
 
     // Increment events

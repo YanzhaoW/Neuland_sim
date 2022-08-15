@@ -51,3 +51,4 @@ macros/*.root
 .cache
 allParams*
 output*
+archive

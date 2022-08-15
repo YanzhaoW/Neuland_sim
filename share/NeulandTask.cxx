@@ -3,6 +3,8 @@
 #include "TApplication.h"
 #include "TCanvas.h"
 #include "TList.h"
+#include "TH1.h"
+#include "TString.h"
 
 NeulandTask::NeulandTask()
     : FairTask()
@@ -24,9 +26,13 @@ NeulandTask::~NeulandTask()
 
 void NeulandTask::Register(TCanvas* c)
 {
-    std::cout << "program passing here" << std::endl;
     canvasList->AddLast(c);
-    std::cout << "program passing here" << std::endl;
+}
+
+void NeulandTask::Register(TH1* c){
+    TString canvasName = TString::Format("histgram_%d", canvasList->GetSize());
+    auto canvas =  new TCanvas(canvasName, canvasName);
+    Register(canvas);
 }
 
 void NeulandTask::Plot(Int_t event_gap)
