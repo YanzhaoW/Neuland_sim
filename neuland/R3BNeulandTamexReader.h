@@ -56,8 +56,8 @@ class R3BNeulandTamexReader : public R3BReader
     UInt_t fNofPlanes;                       // Number of planes
     Bool_t fOnline;                          // Don't store data for online
 
-  public:
-    ClassDefOverride(R3BNeulandTamexReader, 0);
+  // public:
+  //   ClassDefOverride(R3BNeulandTamexReader, 0);
 };
 
 #endif

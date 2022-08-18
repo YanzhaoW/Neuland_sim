@@ -256,12 +256,13 @@ InitStatus R3BNeulandOnlineSpectra::Init()
     hNeuLANDvsSOFIA->Draw("colz");
 
     hTOF = new TH1D("hTOF", "hTOF", 6000, -11000, 11000);
-    hTOFc = new TH1D("hTOFc", "hTOFc", 8000, -6000, 6000);
+    hTOFc = new TH1D("hTOFc", "hTOFc", 6000, -100, 500);
     canvasPlaneSofia->cd(2);
     gPad->SetLogy();
     // hTOF->Draw();
     // hTOFc->SetLineColor(2);
     hTOFc->Draw("");
+    Register(canvasPlaneSofia);
 
     canvasPlaneSofia->cd(3);
     gPad->SetLogz();
@@ -408,6 +409,8 @@ void R3BNeulandOnlineSpectra::Exec(Option_t*)
 }
 
 void R3BNeulandOnlineSpectra::FinishEvent(){
+
+    Plot();
     // LOG(INFO) << "Event is finished! ";
 }
 void R3BNeulandOnlineSpectra::FinishTask()

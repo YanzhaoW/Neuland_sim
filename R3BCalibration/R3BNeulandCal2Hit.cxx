@@ -34,7 +34,7 @@ R3BNeulandCal2Hit::R3BNeulandCal2Hit(const char* name, const Int_t iVerbose)
     : FairTask(name, iVerbose)
     , fEventHeader(nullptr)
     , fCalData("NeulandCalData")
-    , fCalTriggerData("NeulandTriggerCalData")
+    // , fCalTriggerData("NeulandTriggerCalData")
     , fHits("NeulandHits")
     , fFirstPlaneHorizontal(true)
     , fDistanceToTarget(Neuland::NaN)
@@ -59,7 +59,7 @@ InitStatus R3BNeulandCal2Hit::Init()
     }
 
     fCalData.Init();
-    fCalTriggerData.Init();
+    // fCalTriggerData.Init();
     fHits.Init();
 
     SetParameter();
@@ -134,7 +134,7 @@ void R3BNeulandCal2Hit::Exec(Option_t*)
     fHitMap.clear();
 
     auto calData = fCalData.Retrieve();
-    auto calTriggerData = fCalTriggerData.Retrieve();
+    // auto calTriggerData = fCalTriggerData.Retrieve();
 
     const auto start = fEventHeader->GetTStart();
     const bool beam = !std::isnan(start);

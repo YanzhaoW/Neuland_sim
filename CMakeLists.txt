@@ -16,18 +16,15 @@ include_directories(
     "${CMAKE_SOURCE_DIR}/calibration"
     "${CMAKE_SOURCE_DIR}/R3BCalibration"
     "${CMAKE_SOURCE_DIR}/test"
+    "${R3BROOT}/include" 
     "${FAIRROOTPATH}/include"
     "${SIMPATH}/include" 
     "${SIMPATH}/include/geant4vmc" 
     "${SIMPATH}/include/Geant4" 
     "${SIMPATH}/include/root6"
-    "${R3BROOT}/include" 
     "${ucesb_INCLUDE_DIR}"
     )
 
-# making simulation executable:
-add_executable(simulate simulate.cxx)
-target_link_libraries(simulate neuland ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
 
 # make digitization executable:
 add_subdirectory(neuland)
@@ -41,6 +38,9 @@ add_subdirectory(test)
 
 
 
+# # making simulation executable:
+# add_executable(simulate simulate.cxx)
+# target_link_libraries(simulate neuland ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
 
 add_executable(checkout checkout.cxx)
 # target_link_libraries(checkout calibration digitizing Proto ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})

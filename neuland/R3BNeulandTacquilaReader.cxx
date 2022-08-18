@@ -104,4 +104,4 @@ void R3BNeulandTacquilaReader::Reset()
     fArray->Clear();
 }
 
-ClassImp(R3BNeulandTacquilaReader)
+// ClassImp(R3BNeulandTacquilaReader)

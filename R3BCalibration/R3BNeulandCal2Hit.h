@@ -58,7 +58,7 @@ class R3BNeulandCal2Hit : public FairTask
     R3BEventHeader* fEventHeader;
 
     TCAInputConnector<R3BNeulandCalData> fCalData;
-    TCAInputConnector<R3BNeulandCalData> fCalTriggerData;
+    // TCAInputConnector<R3BNeulandCalData> fCalTriggerData;
     TCAOutputConnector<R3BNeulandHit> fHits;
 
     R3BNeulandHitPar* fPar;

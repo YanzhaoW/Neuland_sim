@@ -44,8 +44,8 @@ int main()
     const TString filename = "/d/land4/202205_s522/lmd/main0142_002*.lmd";
 
     const TString ucesbPath = "/u/land/fake_cvmfs/9.13/upexps/202205_s522/202205_s522";
-    const TString usesbCall = ucesbPath + " --allow-errors --input-buffer=135Mi  --max-events=10000";
-    // const TString usesbCall = ucesbPath + " --allow-errors --input-buffer=135Mi";
+    // const TString usesbCall = ucesbPath + " --allow-errors --input-buffer=135Mi  --max-events=10000";
+    const TString usesbCall = ucesbPath + " --allow-errors --input-buffer=135Mi";
 
     const TString outputFileName = "output.root";
     FairLogger::GetLogger()->SetLogScreenLevel("INFO");

@@ -73,8 +73,8 @@ class R3BNeulandTacquilaReader : public R3BReader
     FairLogger* fLogger;  /**< FairLogger. */
     TClonesArray* fArray; /**< Output array. */
 
-  public:
-    ClassDef(R3BNeulandTacquilaReader, 0);
+  // public:
+  //   ClassDef(R3BNeulandTacquilaReader, 0);
 };
 
 #endif

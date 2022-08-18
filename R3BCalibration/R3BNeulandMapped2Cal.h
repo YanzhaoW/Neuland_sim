@@ -138,7 +138,7 @@ class R3BNeulandMapped2Cal : public FairTask
     TClonesArray* fMapped;        /**< Array with raw items - input data. */
     TClonesArray* fMappedTrigger; /**< Array with raw items - input data. */
     TClonesArray* fCal;           /**< Array with time items - output data. */
-    TClonesArray* fCalTrigger;    /**< Array with time items - output data. */
+    // TClonesArray* fCalTrigger;    /**< Array with time items - output data. */
     Int_t fNPmt;                  /**< Number of produced time items per event. */
 
     R3BTCalPar* fTcalPar; /**< TCAL parameter container. */

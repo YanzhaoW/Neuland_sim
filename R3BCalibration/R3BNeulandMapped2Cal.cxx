@@ -27,19 +27,7 @@
 #include "mapping_neuland_trig.hh"
 
 R3BNeulandMapped2Cal::R3BNeulandMapped2Cal()
-    : FairTask("NeulandMapped2Cal", 1)
-    , fNEvents(0)
-    , fPulserMode(kFALSE)
-    , fWalkEnabled(kTRUE)
-    , fSubtractTriggerTime(kTRUE)
-    , fMapped(NULL)
-    , fMappedTrigger(NULL)
-    , fCal(new TClonesArray("R3BNeulandCalData"))
-    , fCalTrigger(new TClonesArray("R3BNeulandCalData"))
-    , fNPmt(0)
-    , fTcalPar(NULL)
-    , fTrigger(-1)
-    , fClockFreq(1. / VFTX_CLOCK_MHZ * 1000.)
+    : R3BNeulandMapped2Cal("NeulandMapped2Cal", 1)
 {
 }
 
@@ -52,7 +40,7 @@ R3BNeulandMapped2Cal::R3BNeulandMapped2Cal(const char* name, Int_t iVerbose)
     , fMapped(NULL)
     , fMappedTrigger(NULL)
     , fCal(new TClonesArray("R3BNeulandCalData"))
-    , fCalTrigger(new TClonesArray("R3BNeulandCalData"))
+    // , fCalTrigger(new TClonesArray("R3BNeulandCalData"))
     , fNPmt(0)
     , fTcalPar(NULL)
     , fTrigger(-1)
@@ -68,11 +56,11 @@ R3BNeulandMapped2Cal::~R3BNeulandMapped2Cal()
         fCal = NULL;
         fNPmt = 0;
     }
-    if (fCalTrigger)
-    {
-        delete fCalTrigger;
-        fCalTrigger = NULL;
-    }
+    // if (fCalTrigger)
+    // {
+    //     delete fCalTrigger;
+    //     fCalTrigger = NULL;
+    // }
 }
 
 InitStatus R3BNeulandMapped2Cal::Init()
@@ -113,11 +101,11 @@ InitStatus R3BNeulandMapped2Cal::Init()
     mgr->Register("NeulandCalData", "Neuland", fCal, kTRUE);
     fCal->Clear();
 
-    if (fMappedTrigger)
-    {
-        mgr->Register("NeulandTrigCalData", "Neuland", fCalTrigger, kTRUE);
-        fCalTrigger->Clear();
-    }
+    // if (fMappedTrigger)
+    // {
+    //     mgr->Register("NeulandTriggerCalData", "Neuland", fCalTrigger, kTRUE);
+    //     fCalTrigger->Clear();
+    // }
 
     htcal1 = new TH2F("htcal1", "htcal1", 800, 0.5, 800.5, 500, -1., 6.);
     htcal2 = new TH2F("htcal2", "htcal2", 800, 0.5, 800.5, 500, -1., 6.);
@@ -182,7 +170,7 @@ void R3BNeulandMapped2Cal::Exec(Option_t* option)
 void R3BNeulandMapped2Cal::MakeCal()
 {
     // Map and calibrate triggers.
-    std::vector<double> trig_map(169);
+    std::vector<Double_t> trig_map(169);
     Int_t nHits = fMappedTrigger->GetEntriesFast();
     for (int i = 0; i < nHits; ++i)
     {
@@ -284,37 +272,38 @@ void R3BNeulandMapped2Cal::MakeCal()
         coarse = 1 == iSide ? hit->fCoarseTime1TE : hit->fCoarseTime2TE;
         timeTE = fClockFreq - timeTE + coarse * fClockFreq;
 
-        //if (fSubtractTriggerTime)
+        // if (fSubtractTriggerTime)
         //{
-            // Subtract trigger time.
+        // Subtract trigger time.
         //    timeLE -= trig_ns;
         //  timeTE -= trig_ns;
 
         //  qdc = timeTE - timeLE;
 
-            // Put all times in reasonable range.
+        // Put all times in reasonable range.
         //  double const c_range = 2048 * 5.;
         //  timeLE = fmod(timeLE + c_range + c_range / 2, c_range) - c_range / 2;
         //  timeTE = fmod(timeTE + c_range + c_range / 2, c_range) - c_range / 2;
         //  qdc = fmod(qdc + c_range + c_range / 2, c_range) - c_range / 2;
         //}
-        //else
+        // else
         //{
-            if (timeTE - timeLE < 0)
-            {
-                qdc = 2048 * fClockFreq + timeTE - timeLE;
-            }
-            else
-            {
-                qdc = timeTE - timeLE;
-            }
-            //}
+        if (timeTE - timeLE < 0)
+        {
+            qdc = 2048 * fClockFreq + timeTE - timeLE;
+        }
+        else
+        {
+            qdc = timeTE - timeLE;
+        }
+        //}
 
         if (fWalkEnabled)
             timeLE = timeLE + WalkCorrection(qdc);
 
-        new ((*fCal)[fNPmt]) R3BNeulandCalData((iPlane - 1) * 50 + iBar, iSide, timeLE, qdc);
-        new ((*fCalTrigger)[fNPmt]) R3BNeulandCalData((iPlane - 1) * 50 + iBar, iSide, trig_ns, -1);
+        new ((*fCal)[fNPmt]) R3BNeulandCalData((iPlane - 1) * 50 + iBar, iSide, timeLE, trig_ns, qdc);
+        // new ((*fCal)[fNPmt]) R3BNeulandCalData((iPlane - 1) * 50 + iBar, iSide, timeLE, qdc);
+        // new ((*fCalTrigger)[fNPmt]) R3BNeulandCalData((iPlane - 1) * 50 + iBar, iSide, trig_ns, -1);
         fNPmt += 1;
 
         /* if (timeTE-timeLE < 0)
@@ -344,10 +333,10 @@ void R3BNeulandMapped2Cal::FinishEvent()
         fCal->Clear();
         fNPmt = 0;
     }
-    if (fCalTrigger)
-    {
-        fCalTrigger->Clear();
-    }
+    // if (fCalTrigger)
+    // {
+    //     fCalTrigger->Clear();
+    // }
 
     fNEvents += 1;
 }
