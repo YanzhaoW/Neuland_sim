@@ -1,7 +1,7 @@
 #ifndef NEULANDCALTESTING_H
 #define NEULANDCALTESTING_H
 
-#include "FairTask.h"
+#include "NeulandTask.h"
 #include "R3BNeulandCalData.h"
 #include "TCAConnector.h"
 
@@ -11,13 +11,14 @@ class TH1I;
 class TH1D;
 class TH2D;
 class R3BNeulandHit;
+class TCanvas;
 
 
-class NeulandCalTesting : public FairTask
+class NeulandCalTesting : public NeulandTask
     {
     public:
         NeulandCalTesting(const char* name = "NeulandCalTesting", const Int_t iVerbose = 0);
-        ~ NeulandCalTesting() override = default;
+        ~ NeulandCalTesting() override;
 
 
         InitStatus Init() override;
@@ -34,13 +35,19 @@ class NeulandCalTesting : public FairTask
         R3BEventHeader* fEventHeader;
         FairRootManager* ioman;
         TH1I* fNhits;
-        TH1D* fSignalTimes;
-        TH1D* fSignalTimesTrig;
-        TH1D* fHitTimes;
+        TH1I* fNBar2;
+        TH1I* fNBar3;
+        TH1I* fEvents;
+        TH1I* fSizeVs2Sigs;
+        TH1I* fSizeVs4Sigs;
+        TH1D* hTOFc;
         TH2D* fXYplanes;
+        TCanvas* canvas;
+        TCanvas* canvas1;
 
         int fEventNum = 0;
         int fMaxHitNum = 0;
+        Int_t fSize = 0;
         const Double_t fDistanceToTarget = 1520;
         const Double_t clight = 29.9792458;
     };

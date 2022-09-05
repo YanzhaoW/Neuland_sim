@@ -108,10 +108,10 @@ int main(int argc, char* argv[])
     rtdb->setInputVersion(999, (char*)"NeulandHitPar", 1, 1);
 
     // run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTamex()));
-    auto onlinespectra = new R3BNeulandOnlineSpectra();
-    onlinespectra->SetDistanceToTarget(1520);
-    run->AddTask(onlinespectra);
-    // run->AddTask(new NeulandCalTesting());
+    // auto onlinespectra = new R3BNeulandOnlineSpectra();
+    // onlinespectra->SetDistanceToTarget(1520);
+    // run->AddTask(onlinespectra);
+    run->AddTask(new NeulandCalTesting());
     // run.AddTask(new R3BNeulandHitProto(argv[1]));
     // run->AddTask(new TestTask());
     run->AddTask(new EventProgress(NMAX));

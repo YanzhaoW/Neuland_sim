@@ -39,8 +39,8 @@ add_subdirectory(test)
 
 
 # # making simulation executable:
-# add_executable(simulate simulate.cxx)
-# target_link_libraries(simulate neuland ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
+add_executable(simulate simulate.cxx)
+target_link_libraries(simulate neuland share ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
 
 add_executable(checkout checkout.cxx)
 # target_link_libraries(checkout calibration digitizing Proto ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})

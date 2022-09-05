@@ -1,0 +1,25 @@
+simulation:
+  energy:
+     min: 400
+     max: 600
+     sep: 100
+
+  particle:
+    ID: [2112]
+    multi: [1]
+
+  event:
+    number: 10000
+    print: 1000
+
+  fileIO:
+    sim: test.simu.root
+    par: test.para.root
+
+
+detector:
+  neuland:
+    active: on
+    dp: 30
+    position: [0, 0, 1650]
+
