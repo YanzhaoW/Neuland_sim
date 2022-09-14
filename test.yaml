@@ -1,6 +1,6 @@
 simulation:
   energy:
-     min: 400
+     min: 200
      max: 600
      sep: 100
 
@@ -9,12 +9,12 @@ simulation:
     multi: [1]
 
   event:
-    number: 10000
-    print: 1000
+    number: 20
+    print: 4
 
-  fileIO:
-    sim: test.simu.root
-    par: test.para.root
+  files:
+    workDir: /u/yanwang/software/R3BRoot/
+    outDir: ../out/
 
 
 detector:

@@ -27,6 +27,8 @@ void SimuNode::Parse(const node& root_node)
         Emin = simu["energy"]["min"].as<float>();
         Emax = simu["energy"]["max"].as<float>();
         Esep = simu["energy"]["sep"].as<float>();
+        if(Emax < Emin)
+            std::cerr << "maximal energy is smaller than minimal energy" << std::endl;
         n = floor((Emax - Emin) / Esep);
         energy = std::vector<float>(n+1, 0);
         for (int i = 0; i < n+1; i++)
@@ -53,15 +55,6 @@ void SimuNode::Parse(const node& root_node)
         }
     }
 
-    // other infromation:
-    if (simu["fileIO"].IsMap())
-    {
-        if (simu["fileIO"]["sim"].IsScalar())
-            simFile = simu["fileIO"]["sim"].as<std::string>();
-
-        if (simu["fileIO"]["par"].IsScalar())
-            parFile = simu["fileIO"]["par"].as<std::string>();
-    }
 
     if (simu["event"].IsMap())
     {
@@ -70,6 +63,16 @@ void SimuNode::Parse(const node& root_node)
 
         if (simu["event"]["print"].IsScalar())
             eventPrint = simu["event"]["print"].as<int>();
+    }
+
+    if (simu["files"].IsMap())
+    {
+        if (simu["files"]["workDir"].IsScalar()){
+            workDir = simu["files"]["workDir"].as<std::string>();
+        }
+        if (simu["files"]["outDir"].IsScalar()){
+            outDir = simu["files"]["outDir"].as<std::string>();
+        }
     }
 }
 

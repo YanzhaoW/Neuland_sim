@@ -10,7 +10,7 @@ include(${CMAKE_SOURCE_DIR}/cmake_modules/cmake_additional.cmake)
 
 include_directories(
     "${CMAKE_SOURCE_DIR}/share"
-    "${CMAKE_SOURCE_DIR}/neuland"
+    "${CMAKE_SOURCE_DIR}/r3bneuland"
     "${CMAKE_SOURCE_DIR}/digitizing"
     "${CMAKE_SOURCE_DIR}/online"
     "${CMAKE_SOURCE_DIR}/calibration"
@@ -25,31 +25,35 @@ include_directories(
     "${ucesb_INCLUDE_DIR}"
     )
 
-
 # make digitization executable:
-add_subdirectory(neuland)
-add_subdirectory(share)
+set(NEULAND_LIBRARIES)
+add_subdirectory(r3bneuland)
 add_subdirectory(digitizing)
 add_subdirectory(calibration)
 add_subdirectory(Protobuf)
 add_subdirectory(R3BCalibration)
 add_subdirectory(online)
 add_subdirectory(test)
+add_subdirectory(share)
 
 
 
 # # making simulation executable:
+add_executable(neuland neuland.cxx)
+target_link_libraries(neuland share Boost::program_options)
+
 add_executable(simulate simulate.cxx)
-target_link_libraries(simulate neuland share ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
+target_link_libraries(simulate r3bneuland share online calibration digitizing ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
+
 
 add_executable(checkout checkout.cxx)
 # target_link_libraries(checkout calibration digitizing Proto ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
-target_link_libraries(checkout neuland test share online calibration digitizing ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
+target_link_libraries(checkout r3bneuland share online calibration digitizing ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
 target_compile_options(checkout PRIVATE -Wno-shadow)
 
 # making experimental data reader executable:
 add_executable(reader reader.cxx)
-target_link_libraries(reader neuland R3BCalibration ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
+target_link_libraries(reader r3bneuland R3BCalibration ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
 
 # add_executable(plot plot.cxx)
 # target_link_libraries(plot ROOT::RIO ROOT::Core ROOT::MathCore Gpad Hist Graf)

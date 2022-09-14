@@ -48,7 +48,6 @@ class Simulator{
         // std::cout << "inside: " << fRunConfiguration.parFile << std::endl;
     }
 
-    void SetFolder(const char* name){ folderName = std::string{name};}
    private:
     TStopwatch* timer;
     FairRunSim* fRun;
@@ -61,12 +60,11 @@ class Simulator{
     // R3BNeulandField* magField = new R3BNeulandField();
     RunManager* fRunMan;
 
-    const TString workDirectory = "/u/yanwang/software/R3BRoot";
-    TString simufile = "test.simu.root";
-    TString parafile = "test.para.root";
+    std::string workDir;
+    std::string simufile;
+    std::string parafile;
     Int_t eventNum = 200;
     Int_t printEventNum = 10;
     const RunConfig& fRunConfiguration;
-    std::string folderName = "./out/";
 };
 #endif

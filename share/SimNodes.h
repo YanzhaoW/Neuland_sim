@@ -27,17 +27,17 @@ class SimuNode : public YamlNodes
     const std::vector<float>& GetEnergy() const { return energy; }
     const std::vector<int>& GetParticleID() const { return ParticleID; }
     const std::vector<short>& GetParticleMulti() const { return ParticleMulti; }
-    const std::string& GetSimFile() const { return simFile; }
-    const std::string& GetParFile() const { return parFile; }
     int GetEventNum() const { return eventNum; }
     int GetEventPrint() const { return eventPrint; }
+    std::string GetWorkDir() const { return workDir; }
+    std::string GetOutDir() const { return outDir; }
 
   private:
     std::vector<float> energy;
     std::vector<int> ParticleID;
     std::vector<short> ParticleMulti;
-    std::string simFile = "";
-    std::string parFile = "";
+    std::string workDir;
+    std::string outDir;
     int eventNum = 0;
     int eventPrint = 0;
 };

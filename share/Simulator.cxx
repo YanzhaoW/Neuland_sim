@@ -13,22 +13,16 @@ Simulator::Simulator(const RunConfig& runconfig):
     primGen{new FairPrimaryGenerator},
     fRunConfiguration{runconfig} 
 {
-    // FairLogger::GetLogger()->SetLogVerbosityLevel("verylow");
-    FairLogger::GetLogger()->SetLogScreenLevel("WARN");
-    // FairLogger::GetLogger()->SetLogToScreen(false);
-    gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
-    gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
     fRunMan = RunManager::GetInstance();
+    // FairLogger::GetLogger()->SetLogVerbosityLevel("verylow");
 }
 
 Simulator::~Simulator() {
+    auto sink = fRun->GetSink();
+    sink->Close();
     timer_stop();
     delete timer;
-    delete boxGen;
-    delete primGen;
-    delete cave;
-    delete neuland;
-    delete parFileIO;
+    delete fRun;
     LOG(INFO) << "simulator has been deconstructed succesfully.";
 }
 
@@ -41,10 +35,17 @@ void Simulator::timer_stop() {
 
 void Simulator::SetPar(){
 
-    simufile = folderName + fRunConfiguration.simFile;
+    workDir = fRunConfiguration.workDir;
+    simufile = fRunConfiguration.simFile;
     eventNum = fRunConfiguration.eventNum;
     printEventNum = fRunConfiguration.eventPrint;
-    parafile = folderName + fRunConfiguration.parFile;
+    parafile = fRunConfiguration.parFile;
+
+    // FairLogger::GetLogger()->SetLogScreenLevel("DEBUG");
+    FairLogger::GetLogger()->SetLogScreenLevel("WARN");
+    // FairLogger::GetLogger()->SetLogToScreen(false);
+    gSystem->Setenv("GEOMPATH", (workDir + std::string{ "geometry" }).c_str());
+    gSystem->Setenv("CONFIG_DIR", (workDir + std::string{ "gconfig" }).c_str());
 
     fRun->SetName("TGeant4");
     fRun->SetStoreTraj(false);

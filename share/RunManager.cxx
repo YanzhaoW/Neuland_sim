@@ -2,6 +2,7 @@
 
 #include "SimNodes.h"
 #include "Simulator.h"
+#include "Analyser.h"
 #include <iostream>
 #include <memory>
 #include <signal.h>
@@ -9,11 +10,22 @@
 #include <string>
 #include <sys/wait.h>
 #include <unistd.h>
+#include "TDatime.h"
+#include <boost/filesystem.hpp>
 
 RunManager* RunManager::runs = nullptr;
 const std::string RunManager::NeulandStr = "neuland";
 int RunConfig::ePrecision = 9;
 
+RunConfig::RunConfig(float E, int id, short Multi, int eNum, int ePri)
+    : energy(E)
+    , particleId(id)
+    , particleMulti(Multi)
+    , eventNum(eNum)
+    , eventPrint(ePri)
+    , fRunManager(RunManager::GetInstance())
+{
+}
 void RunConfig::GenerateFileNames()
 {
     auto out = std::ostringstream{};
@@ -21,20 +33,32 @@ void RunConfig::GenerateFileNames()
 
     out << "E_" << energy << "_Mul_" << particleMulti << "_Id_" << particleId << ".root";
 
-    simFile = std::string{ "sim_" } + out.str();
-    parFile = std::string{ "par_" } + out.str();
+    auto fileDir = fRunManager->GetFileDir();
+
+    simFile = fileDir + std::string{ "sim_" } + out.str();
+    std::cout << "Simulation file: " << simFile << std::endl;
+
+    parFile = fileDir + std::string{ "par_" } + out.str();
+    std::cout << "parameter file: " << parFile << std::endl;
+
+    anlysFile = fileDir + std::string{ "anlys_" } + out.str();
+    std::cout << "analytical file: " << anlysFile << std::endl;
 }
+
 
 RunManager::RunManager(const std::string filename)
 {
     if (!filename.empty())
         Load_Yaml(filename);
     // Implement_fun(NeulandStr, &RunManager::NeulandParse);
+    fTime = new TDatime{};
     Add_Node(new SimuNode());
     Add_Node(new NeulandNode());
 }
 
-RunManager::~RunManager() {}
+RunManager::~RunManager() {
+    delete fTime;
+}
 
 void RunManager::Load_Yaml(const std::string filename) { root_node = YAML::LoadFile(filename); }
 
@@ -61,6 +85,18 @@ void RunManager::Print() const
 
 void RunManager::Add_Node(YamlNodes* n) { fNodes[n->GetName()] = n; }
 
+void RunManager::Mkdir(std::string fD){
+    auto dir = boost::filesystem::path(fD.c_str());
+    if(boost::filesystem::create_directories(dir))
+    {
+        std::cout << "Directory " << fD << " is created. " << std::endl;
+    }
+    else{
+        std::cout <<  "Directory " << fD << " already existed. " << std::endl;
+    }
+
+}
+
 void RunManager::Init()
 {
     auto simuNode = dynamic_cast<SimuNode*>(fNodes.at("simulation"));
@@ -70,6 +106,12 @@ void RunManager::Init()
     auto particle_multi = simuNode->GetParticleMulti();
     auto eventNum = simuNode->GetEventNum();
     auto eventPrint = simuNode->GetEventPrint();
+    auto workDir = simuNode->GetWorkDir();
+    fDataOut = simuNode->GetOutDir();
+
+    fileDir = fDataOut + RunManager::GetInstance()->GetDate() + std::string{"/"};
+
+    Mkdir(fileDir);
 
     fNumOfRuns = energies.size() * particle_ids.size() * particle_multi.size();
 
@@ -83,6 +125,8 @@ void RunManager::Init()
             for (auto const it_multi : particle_multi)
             {
                 *it_config = RunConfig{ it_energy, it_id, it_multi, eventNum, eventPrint };
+                it_config->SetWorkDir(workDir);
+                it_config->SetOutDir(fDataOut);
                 it_config->GenerateFileNames();
                 it_config++;
             }
@@ -119,19 +163,69 @@ int RunManager::SpawnChild(const RunConfig& rc)
     }
 }
 
-void RunManager::Process(const RunConfig& rconfig)
+void RunManager::SimuProcess(const RunConfig& rconfig)
 {
     auto simRun = Simulator{ rconfig };
     // simRun.Print();
     simRun.Start();
     simRun.Run();
 }
+
+void RunManager::AnalProcess(const RunConfig& rconfig)
+{
+    auto anaRun = Analyser{ rconfig };
+    // simRun.Print();
+    auto res = anaRun.Start();
+    if(res == 0)
+        anaRun.Run();
+}
+
 void RunManager::CreateProcess(const RunConfig& rconfig)
 {
-    Process(rconfig);
+    if (is_simu)
+        CreateSideProcess(&RunManager::SimuProcess, rconfig);
+    if (is_anal)
+        CreateSideProcess(&RunManager::AnalProcess, rconfig);
     this->~RunManager();
     exit(0);
 }
+
+
+void RunManager::CreateSideProcess(processFun f, const RunConfig& rconfig){
+    int id = fork();
+
+    if(id == 0)
+    {
+        std::cout << "creating side process" << std::endl;
+        (this->*f)(rconfig);
+        this->~RunManager();
+        exit(0);
+    }
+    else if (id > 0){
+        sideChildPID = id;
+    }
+    else {
+        std::cerr << "side process failed to create!" << std::endl;
+    }
+    struct sigaction sa;
+    sa.sa_handler = &handle_side_sigint;
+    sigaction(SIGINT, &sa, NULL);
+    std::cout << "child process waiting.............." << std::endl;
+    wait(NULL);
+}
+
+void RunManager::handle_side_sigint(int sig)
+{
+    auto pid = GetInstance()->GetSidePIDs();
+    if (pid > 0)
+    {
+        kill(pid, SIGINT);
+        std::cout << "side process " << pid << " is killed." << std::endl;
+    }
+    GetInstance()->~RunManager();
+    exit(1);
+}
+
 
 void RunManager::handle_sigint(int sig)
 {
@@ -171,3 +265,27 @@ void RunManager::Start()
         }
     }
 }
+
+std::string RunManager::GetDate()
+{
+    if (is_simu){
+        auto out = std::ostringstream{};
+        out << fTime->GetMonth() << "-" << fTime->GetDay() << "-" << fTime->GetYear() << "-" << fTime->GetHour()<< "h-"  << fTime->GetMinute() << "m-"  << fTime->GetSecond() << "s";
+
+        return out.str();
+    }
+    else{
+        return GetLastDate();
+    }
+}
+
+std::string RunManager::GetLastDate(){
+    namespace fs = boost::filesystem;
+    auto dirs = std::vector<fs::path>{};
+    std::copy(fs::directory_iterator(fs::path(fDataOut.c_str())), fs::directory_iterator(), std::back_inserter(dirs));
+    return dirs.back().filename().string();
+
+}
+
+
+

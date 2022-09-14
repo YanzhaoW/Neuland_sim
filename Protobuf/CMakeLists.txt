@@ -4,6 +4,7 @@
 
 set( Protobuf_INCLUDE_DIR "${SIMPATH}/include")
 set(OtherLibs ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})
+set(LIBRARY_NAME Proto)
 # find_package(Protobuf REQUIRED PATH "${HOME}/software/src/protobuf-3.20.1/cmake")
 find_package(Protobuf REQUIRED)
 
@@ -16,8 +17,11 @@ endif()
 
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS NeulandHit.proto)
 # SET_SOURCE_FILES_PROPERTIES(${PROTO_SRC} ${PROTO_HDRS} PROPERTIES GENERATED TRUE)
-add_library(Proto ${PROTO_SRCS} ${PROTO_HDRS} R3BNeulandHitProto.cxx)
-target_link_libraries(Proto PUBLIC ${OtherLibs} ${PROTOBUF_LIBRARY})
-target_include_directories(Proto PUBLIC ${Protobuf_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+add_library(${LIBRARY_NAME} ${PROTO_SRCS} ${PROTO_HDRS} R3BNeulandHitProto.cxx)
+target_link_libraries(${LIBRARY_NAME} PUBLIC ${OtherLibs} ${PROTOBUF_LIBRARY})
+target_include_directories(${LIBRARY_NAME} PUBLIC ${Protobuf_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 target_compile_options(Proto PRIVATE -Wno-shadow)
 # message(STATUS "properties: ${PROTOBUF_LIBRARY}")
+
+list(APPEND NEULAND_LIBRARIES ${LIBRARY_NAME})
+set(NEULAND_LIBRARIES ${NEULAND_LIBRARIES} PARENT_SCOPE)

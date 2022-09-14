@@ -37,6 +37,11 @@ find_package(ucesb REQUIRED)
 find_package(ROOT REQUIRED COMPONENTS Geom PATHS ${SIMPATH} )
 find_package(Geant4 REQUIRED PATHS ${SIMPATH}/lib)
 
+find_package(Boost REQUIRED COMPONENTS program_options filesystem)
+if(Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+endif()
+
 find_package(yaml-cpp REQUIRED PATHS ${SIMPATH}/lib)
 
 # message(STATUS "use file: ${ROOT_USE_FILE}")
@@ -124,11 +129,6 @@ endif()
 
 find_library(UCESB_LIBRARY ${ucesb_LIBRARY_SHARED} HINTS ${ucesb_LIBRARY_DIR})
 list(APPEND R3BROOT_LIBRARIES ${UCESB_LIBRARY})
-
-
-
-
-
 
 include(CheckCompiler)
 

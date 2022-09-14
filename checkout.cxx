@@ -30,7 +30,55 @@
 #include "R3BNeulandOnlineSpectra.h"
 #include "TestTask.h"
 
-// int main(int argc, char *argv[]){
+int main(int argc, char *argv[]){
+    TStopwatch timer;
+    timer.Start();
+
+    const TString workDirectory = "/u/yanwang/software/R3BRoot";
+    gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
+    gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
+    FairLogger::GetLogger()->SetLogScreenLevel("INFO");
+    auto run = new FairRunAna();
+    run->SetSource(new FairFileSource("../out/sim_E_600_Mul_1_Id_2112.root"));
+    run->SetSink(new FairRootFileSink("ana.root"));
+
+    auto io = new FairParRootFileIo();
+    io->open("../out/par_E_600_Mul_1_Id_2112.root");
+    auto runtimeDb = run->GetRuntimeDb();
+    runtimeDb->setFirstInput(io);
+
+    run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTamex()));
+    // run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTacQuila()));
+    run->AddTask(new R3BNeulandHitMon());
+    // run->AddTask(new NeulandCalTesting());
+    // run.AddTask(new R3BNeulandHitProto(argv[1]));
+    LOG(ERROR) << "+++++++++++++++++++=";
+    run->Init();
+
+    LOG(ERROR) << "-----------------------";
+    run->Run(0,0);
+
+    LOG(ERROR) << "==========================";
+    // include this otherwie it will get errors
+    auto sink = run->GetSink();
+    sink->Close();
+
+    std::cout << "*************" << std::endl;
+    timer.Stop();
+    std::cout << "Macro finished successfully." << std::endl;
+    std::cout << "Real time: " << timer.RealTime() << "s, CPU time: " << timer.CpuTime() << "s" << std::endl;
+    // LOG(DEBUG)<< "----------------exiting------------" ;
+
+    // Don't clean the run object. otherwise it will cause errors.
+    delete run;
+
+    return 0;
+
+}
+
+// int main(int argc, char* argv[])
+// {
+//     Int_t NMAX = 0;
 //     TStopwatch timer;
 //     timer.Start();
 
@@ -39,99 +87,54 @@
 //     gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
 //     FairLogger::GetLogger()->SetLogScreenLevel("INFO");
 //     auto run = new FairRunAna();
-//     run->SetSource(new FairFileSource("test.simu.root"));
-//     run->SetSink(new FairRootFileSink("test.digi.root"));
+//     run->SetSource(new FairFileSource("output.root"));
+//     run->SetSink(new FairRootFileSink("test.cal.root"));
 
-//     auto io = new FairParRootFileIo();
-//     io->open("test.para.root");
-//     auto runtimeDb = run->GetRuntimeDb();
-//     runtimeDb->setFirstInput(io);
+//     auto rtdb = run->GetRuntimeDb();
 
-//     run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTamex()));
-//     // run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTacQuila()));
-//     run->AddTask(new R3BNeulandHitMon());
-//     // run->AddTask(new NeulandCalTesting());
+//     auto parList = new TList();
+//     parList->Add(new TObjString("../parameters/loscalpar_v1.root"));
+//     parList->Add(new TObjString("../parameters/params_tcal_180522xx.root"));
+//     parList->Add(new TObjString("../parameters/params_sync_s522_0999_310522x.root"));
+
+//     auto parIO = new FairParRootFileIo(false);
+
+//     parIO->open(parList);
+//     rtdb->setFirstInput(parIO);
+
+//     rtdb->addRun(999);
+//     rtdb->getContainer("LosTCalPar");
+//     rtdb->setInputVersion(999, (char*)"LosTCalPar", 1, 1);
+//     rtdb->getContainer("LandTCalPar");
+//     rtdb->setInputVersion(999, (char*)"LandTCalPar", 1, 1);
+//     rtdb->getContainer("NeulandHitPar");
+//     rtdb->setInputVersion(999, (char*)"NeulandHitPar", 1, 1);
+
+//     // run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTamex()));
+//     // auto onlinespectra = new R3BNeulandOnlineSpectra();
+//     // onlinespectra->SetDistanceToTarget(1520);
+//     // run->AddTask(onlinespectra);
+//     run->AddTask(new NeulandCalTesting());
 //     // run.AddTask(new R3BNeulandHitProto(argv[1]));
+//     // run->AddTask(new TestTask());
+//     run->AddTask(new EventProgress(NMAX));
 //     run->Init();
 
-//     run->Run(0,0);
-
-//     // include this otherwie it will get errors
-//     auto sink = run->GetSink();
-//     sink->Close();
-
+//     run->Run(0, NMAX);
 //     std::cout << "*************" << std::endl;
 //     timer.Stop();
 //     std::cout << "Macro finished successfully." << std::endl;
 //     std::cout << "Real time: " << timer.RealTime() << "s, CPU time: " << timer.CpuTime() << "s" << std::endl;
 //     // LOG(DEBUG)<< "----------------exiting------------" ;
 
+//     // include this otherwie it will get errors
+//     auto sink = run->GetSink();
+//     sink->Close();
 //     // Don't clean the run object. otherwise it will cause errors.
-//     delete run;
+//     // run->Delete();
 
 //     return 0;
-
 // }
-
-int main(int argc, char* argv[])
-{
-    Int_t NMAX = 0;
-    TStopwatch timer;
-    timer.Start();
-
-    const TString workDirectory = "/u/yanwang/software/src/R3BRoot";
-    gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
-    gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
-    FairLogger::GetLogger()->SetLogScreenLevel("INFO");
-    auto run = new FairRunAna();
-    run->SetSource(new FairFileSource("output.root"));
-    run->SetSink(new FairRootFileSink("test.cal.root"));
-
-    auto rtdb = run->GetRuntimeDb();
-
-    auto parList = new TList();
-    parList->Add(new TObjString("../parameters/loscalpar_v1.root"));
-    parList->Add(new TObjString("../parameters/params_tcal_180522xx.root"));
-    parList->Add(new TObjString("../parameters/params_sync_s522_0999_310522x.root"));
-
-    auto parIO = new FairParRootFileIo(false);
-
-    parIO->open(parList);
-    rtdb->setFirstInput(parIO);
-
-    rtdb->addRun(999);
-    rtdb->getContainer("LosTCalPar");
-    rtdb->setInputVersion(999, (char*)"LosTCalPar", 1, 1);
-    rtdb->getContainer("LandTCalPar");
-    rtdb->setInputVersion(999, (char*)"LandTCalPar", 1, 1);
-    rtdb->getContainer("NeulandHitPar");
-    rtdb->setInputVersion(999, (char*)"NeulandHitPar", 1, 1);
-
-    // run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTamex()));
-    // auto onlinespectra = new R3BNeulandOnlineSpectra();
-    // onlinespectra->SetDistanceToTarget(1520);
-    // run->AddTask(onlinespectra);
-    run->AddTask(new NeulandCalTesting());
-    // run.AddTask(new R3BNeulandHitProto(argv[1]));
-    // run->AddTask(new TestTask());
-    run->AddTask(new EventProgress(NMAX));
-    run->Init();
-
-    run->Run(0, NMAX);
-    std::cout << "*************" << std::endl;
-    timer.Stop();
-    std::cout << "Macro finished successfully." << std::endl;
-    std::cout << "Real time: " << timer.RealTime() << "s, CPU time: " << timer.CpuTime() << "s" << std::endl;
-    // LOG(DEBUG)<< "----------------exiting------------" ;
-
-    // include this otherwie it will get errors
-    auto sink = run->GetSink();
-    sink->Close();
-    // Don't clean the run object. otherwise it will cause errors.
-    // run->Delete();
-
-    return 0;
-}
 
 // class mytask : public FairTask{
 //     public:

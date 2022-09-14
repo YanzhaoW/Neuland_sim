@@ -8,6 +8,8 @@
 
 class YamlNodes;
 class Simulator;
+class TDatime;
+class RunManager;
 
 class RunConfig
 {
@@ -19,19 +21,22 @@ class RunConfig
     int eventPrint = 0;
     std::string simFile;
     std::string parFile;
+    std::string anlysFile;
+    std::string workDir;
+    std::string outDir;
 
     static int ePrecision;
     RunConfig() = default;
-    RunConfig(float E, int id, short Multi, int eNum, int ePri)
-        : energy(E)
-        , particleId(id)
-        , particleMulti(Multi)
-        , eventNum(eNum)
-        , eventPrint(ePri)
-    {
-    }
+    RunConfig(float E, int id, short Multi, int eNum, int ePri);
     void GenerateFileNames();
+    void SetWorkDir(std::string dir) { workDir = dir; }
+    void SetOutDir(std::string dir) { outDir = dir; }
+  private:
+    RunManager* fRunManager;
+
 };
+
+
 class RunManager
 {
   public:
@@ -49,16 +54,24 @@ class RunManager
     void operator=(const RunManager&&) = delete;
 
     void Add_Node(YamlNodes*);
-    const std::map<std::string, YamlNodes*>& GetNodes() { return fNodes; }
 
     void Load_Yaml(const std::string filename);
     void Parse_Yaml();
     void Start();
     void Print() const;
+    void SetSimu(bool option) {is_simu = option;}
+    void SetAnal(bool option) {is_anal = option;}
+    std::string GetDate();
 
-    const std::vector<int>& GetPIDs() { return fChildPID; }
+    // geters:
+    const std::map<std::string, YamlNodes*>& GetNodes() { return fNodes; }
+    const std::vector<int>& GetPIDs() const { return fChildPID; }
+    const int GetSidePIDs() const { return sideChildPID; }
+    const std::string GetFileDir() const {return fileDir;}
+    const std::vector<RunConfig>* GetConfigs() {return fRunConfigs.get();} // not ownership transfering
 
     const static std::string NeulandStr;
+
     static RunManager* GetInstance(const std::string str = "")
     {
         if (runs == nullptr)
@@ -73,17 +86,28 @@ class RunManager
     void Init();
     int SpawnChild(const RunConfig&);
     void SpawnChildren();
-    void Process(const RunConfig&);
+    void SimuProcess(const RunConfig&);
+    void AnalProcess(const RunConfig&);
     void CreateProcess(const RunConfig&);
+    typedef void (RunManager::*processFun)(const RunConfig&);
+    void CreateSideProcess(processFun, const RunConfig&);
     static void handle_sigint(int sig);
+    static void handle_side_sigint(int sig);
+    std::string GetLastDate();
+    void Mkdir(std::string);
 
     node root_node;
+    TDatime* fTime = nullptr;;
     std::unique_ptr<Simulator> fSimulator;
-
     std::unique_ptr<std::vector<RunConfig>> fRunConfigs;
     std::map<std::string, YamlNodes*> fNodes;
     std::vector<int> fChildPID;
+    int sideChildPID = 0;
     std::string fYaml = "";
+    std::string fDataOut = "";
+    std::string fileDir;
+    bool is_simu = true;
+    bool is_anal = true;
     int fNumOfRuns = 0;
 };
 
