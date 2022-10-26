@@ -86,6 +86,7 @@ void Simulator::geom_setup() {
 }
 
 void Simulator::init() {
+    fRun->SetRunId(999);
     fRun->Init();
     auto grun = G4RunManager::GetRunManager();
     grun->SetPrintProgress(printEventNum);

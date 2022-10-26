@@ -21,7 +21,7 @@ void Reader()
     const Int_t nev = -1;     /* number of events to read, -1 - until CTRL+C */
     const Int_t trigger = -1; // 1 - onspill, 2 - offspill. -1 - all
 
-    const TString filename = "/d/land4/202205_s522/lmd/main0122_0021.lmd";
+    const TString filename = "/d/land4/202205_s522/lmd/main0134_002*.lmd";
     
     const TString ucesbPath = "/u/land/fake_cvmfs/9.13/upexps/202205_s522/202205_s522";
     // const TString usesbCall = ucesbPath + " --allow-errors --input-buffer=135Mi";
@@ -29,6 +29,7 @@ void Reader()
 
     const TString outputFileName = "output.root";
 
+    FairLogger::GetLogger()->SetLogScreenLevel("DEBUG2");
     // Event IO Setup
     // -------------------------------------------
     EXT_STR_h101 ucesbStruct;
@@ -43,10 +44,14 @@ void Reader()
     source->AddReader(new R3BNeulandTamexReader(&ucesbStruct.raw_nnp, offsetof(EXT_STR_h101, raw_nnp)));
 
     auto run = new FairRunOnline(source);
+
+    // auto EvntHeader = new R3BEventHeader();
+    // run->SetEventHeader(EvntHeader);
+
     run->SetRunId(999);
     // run->ActivateHttpServer(1, 8885);
-	run->SetOutputFile(outputFileName.Data());
-    // run->SetSink(new FairRootFileSink(outputFileName));
+    // run->SetOutputFile(outputFileName.Data());
+    run->SetSink(new FairRootFileSink(outputFileName));
 
     // Parameter IO Setup
     // -------------------------------------------
@@ -95,15 +100,14 @@ void Reader()
     nlhit->SetEnergyCutoff(0.0);
     run->AddTask(nlhit);
     
-    auto r3bNeulandOnlineSpectra = new R3BNeulandOnlineSpectra();
-    r3bNeulandOnlineSpectra->SetDistanceToTarget(distanceToTarget);
-    r3bNeulandOnlineSpectra->SetCosmicTpat(0x2000);
-    run->AddTask(r3bNeulandOnlineSpectra);
+    //auto r3bNeulandOnlineSpectra = new R3BNeulandOnlineSpectra();
+    //r3bNeulandOnlineSpectra->SetDistanceToTarget(distanceToTarget);
+    //r3bNeulandOnlineSpectra->SetCosmicTpat(0x2000);
+    //run->AddTask(r3bNeulandOnlineSpectra);
     
     // Go!
     // -------------------------------------------
     run->Init();
-    FairLogger::GetLogger()->SetLogScreenLevel("INFO");
     // LOG(INFO) <<"is https on: " <<  (bool)run->GetHttpServer();
     run->Run((nev < 0) ? nev : 0, (nev < 0) ? 0 : nev);
 

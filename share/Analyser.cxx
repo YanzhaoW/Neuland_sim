@@ -27,6 +27,10 @@
 #include "NeulandCalTesting.h"
 #include "R3BNeulandOnlineSpectra.h"
 #include "TestTask.h"
+#include "FairDetParIo.h"
+#include "FairDetParRootFileIo.h"
+#include "FairRtdbRun.h"
+#include "FairEventHeader.h"
 
 Analyser::Analyser(const RunConfig& rconfig):
     fRunConfiguration(rconfig),
@@ -58,9 +62,11 @@ void Analyser::SetPars()
 
 void Analyser::AddTasks()
 {
-    run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTamex()));
+    // run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTamex()));
     // run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTacQuila()));
-    run->AddTask(new R3BNeulandHitMon());
+
+    // auto hitMon = new R3BNeulandHitMon();
+    // run->AddTask(hitMon);
     // run->AddTask(new NeulandCalTesting());
     // run.AddTask(new R3BNeulandHitProto(argv[1]));
 }
@@ -87,10 +93,21 @@ int Analyser::Start()
         return 2;
     }
 
-    auto io = new FairParRootFileIo();
-    io->open(paraFile.c_str());
     auto runtimeDb = run->GetRuntimeDb();
+    runtimeDb->addRun(999);
+
+    auto parList = new TList();
+    // parList->Add(new TObjString("../parameters/params_sync_s522_0999_310522x.root"));
+    parList->Add(new TObjString(paraFile.c_str()));
+
+    auto io = new FairParRootFileIo(false);
+    io->open(parList);
     runtimeDb->setFirstInput(io);
+
+
+    // runtimeDb->getContainer("NeulandHitPar");
+    // runtimeDb->setInputVersion(999, (char*)"NeulandHitPar", 1, 1);
+
 
     AddTasks();
     run->Init();
@@ -98,4 +115,4 @@ int Analyser::Start()
     return 0;
 }
 
-void Analyser::Run() { run->Run(0, 0); }
+void Analyser::Run() { run->Run(); }

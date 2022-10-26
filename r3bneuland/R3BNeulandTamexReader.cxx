@@ -75,6 +75,17 @@ Bool_t R3BNeulandTamexReader::Init(ext_data_struct_info* a_struct_info)
     FairRootManager::Instance()->Register("NeulandMappedData", "Neuland", fArray, !fOnline);
     FairRootManager::Instance()->Register("NeulandTrigMappedData", "Neuland", fArrayTrigger, !fOnline);
     Reset();
+    R3BLOG(INFO, "=========03============= ");
+    if(!fData)
+	    R3BLOG(INFO, "fData doesn't exists! ");
+    else
+    {
+	    LOG(INFO) << "pannels size: " << sizeof(fData->NN_P)/sizeof(*fData->NN_P);
+	    LOG(INFO) << "value: " << fData->NN_P[1].tft_T[1].BM;
+	    // memset(fData->NN_P, 0,sizeof(fData->NN_P));
+	    LOG(INFO) << "pannels size total: " << sizeof(fData->NN_P);
+    }
+	    R3BLOG(INFO, "size: " << sizeof *fData);
     memset(fData, 0, sizeof *fData);
 
     return kTRUE;

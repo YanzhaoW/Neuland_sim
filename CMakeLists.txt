@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.13.4)
 
 project(testing)
 
-set(R3Blibs R3BPassive R3BBase R3BNeulandSimulation R3BData R3BGen R3BNeulandShared Field R3BTracking R3Bsource R3BLos R3BPsp R3BTCal)
+# set(R3Blibs R3BPassive R3BBase R3BNeulandSimulation R3BData R3BGen R3BNeulandShared Field R3BTracking R3Bsource R3BLos R3BPsp R3BTCal)
+set(R3Blibs R3BPassive R3BBase R3BData R3BGen R3BNeulandShared Field R3BTracking R3Bsource R3BLos R3BPsp R3BTCal)
 set(FairRootlibs FairTools Base Gen TrkBase ParBase GeoBase FairLogger EventDisplay )
 Set(FairSoftlibs geant4vmc)
 
@@ -40,7 +41,7 @@ add_subdirectory(share)
 
 # # making simulation executable:
 add_executable(neuland neuland.cxx)
-target_link_libraries(neuland share Boost::program_options)
+target_link_libraries(neuland r3bneuland share Boost::program_options)
 
 add_executable(simulate simulate.cxx)
 target_link_libraries(simulate r3bneuland share online calibration digitizing ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES} ${R3BROOT_LIBRARIES} ${FAIRSOFT_LIBRARIES})

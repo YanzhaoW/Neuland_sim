@@ -30,6 +30,7 @@
 class TH1D;
 class TH2D;
 class TH3D;
+class TH1I;
 
 class R3BNeulandHitMon : public FairTask
 {
@@ -52,6 +53,7 @@ class R3BNeulandHitMon : public FairTask
     void Exec(Option_t*) override;
 
     void SetDistanceToTarget(double x) { fDistanceToTarget = x; }
+    void Enable3DTrack();
 
   private:
     TString fOutput;
@@ -65,7 +67,7 @@ class R3BNeulandHitMon : public FairTask
 
     TH1D* hTime;
     TH1D* hTimeAdj;
-    TH1D* hMult;
+    TH1I* hNhits;
     TH1D* hDepth;
     TH1D* hForemostEnergy;
     TH1D* hSternmostEnergy;
@@ -82,6 +84,8 @@ class R3BNeulandHitMon : public FairTask
     TH2D* hdeltaEE;
     TH1D* hBeta;
 
+    TH1I* hNhitsOne;
+    TH1I* hNhitsTwo;
     ClassDefOverride(R3BNeulandHitMon, 0);
 };
 

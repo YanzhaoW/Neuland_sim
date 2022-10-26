@@ -48,13 +48,13 @@ int main()
     const TString usesbCall = ucesbPath + " --allow-errors --input-buffer=135Mi";
 
     const TString outputFileName = "output.root";
-    FairLogger::GetLogger()->SetLogScreenLevel("INFO");
+    FairLogger::GetLogger()->SetLogScreenLevel("DEBUG2");
 
 
 
     // Event IO Setup
     // -------------------------------------------
-    EXT_STR_h101 ucesbStruct;
+    EXT_STR_h101_t ucesbStruct;
     // auto source = new R3BUcesbSource(filename, "RAW,time-stitch=1000", usesbCall, &ucesbStruct, sizeof(ucesbStruct));
     auto source = new R3BUcesbSource(filename, "UNPACK:EVENTNO,UNPACK:TRIGGER,RAW", usesbCall, &ucesbStruct, sizeof(ucesbStruct));
     //auto source = new R3BUcesbSource(filename, "RAW", usesbCall, &ucesbStruct, sizeof(ucesbStruct));

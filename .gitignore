@@ -45,10 +45,11 @@ _deps
 *.exe
 *.out
 *.app
-
+.nfs*
 
 macros/*.root
 .cache
 allParams*
 output*
 archive
+core_dump*

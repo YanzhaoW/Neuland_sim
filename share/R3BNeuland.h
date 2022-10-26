@@ -18,10 +18,12 @@
 #include "TLorentzVector.h"
 #include <memory>
 #include <string>
+#include <map>
 
 class FairVolume;
 class TClonesArray;
 class R3BNeulandGeoPar;
+class TH1D;
 
 /**
  * NeuLAND detector simulation class
@@ -78,6 +80,8 @@ class R3BNeuland : public R3BDetector
     void Reset() override;
 
     Bool_t CheckIfSensitive(std::string name) override;
+
+    void FinishRun() override;
 
     // No copy and no move is allowed (Rule of three/five)
     R3BNeuland(const R3BNeuland&) = delete;            // copy constructor

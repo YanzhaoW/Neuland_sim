@@ -22,8 +22,11 @@
 #include "TGeoManager.h"
 #include "TParticle.h"
 #include "TVirtualMC.h"
+#include "TH1D.h"
+#include "FairRootFileSink.h"
 
 #include <iostream>
+#include <vector>
 
 // Initialize variables from Birk' s Law
 static constexpr Double_t BirkdP = 1.032;
@@ -143,13 +146,17 @@ Bool_t R3BNeuland::ProcessHits(FairVolume*)
         gMC->TrackPosition(fPosOut);
         gMC->TrackMomentum(fMomOut);
 
+        auto track= gMC->GetStack()->GetCurrentTrack();
+        auto particle = track->GetName();
         // Add Point
+        // if(gMC->GetStack()->GetCurrentParentTrackNumber() == 0)
         LOG(DEBUG) << "R3BNeuland: Adding Point at (" << fPosIn.X() << ", " << fPosIn.Y() << ", " << fPosIn.Z()
-                   << ") cm,  paddle " << fPaddleID << ", track " << fTrackID << ", energy loss " << fELoss << " GeV "
-                   << gMC->GetStack()->GetCurrentParentTrackNumber();
+            << ") cm,  paddle " << fPaddleID << ", track " << fTrackID << ", energy loss " << fELoss*1000 << " MeV, Parent track ID "
+            << gMC->GetStack()->GetCurrentParentTrackNumber() << " particle " << particle << " time " << fTime;
 
         Int_t size = fNeulandPoints->GetEntriesFast();
         new ((*fNeulandPoints)[size]) R3BNeulandPoint(fTrackID,
+                                                      particle,
                                                       fPaddleID,
                                                       fPosIn.Vect(),
                                                       fMomIn.Vect(),
@@ -172,11 +179,16 @@ Bool_t R3BNeuland::CheckIfSensitive(std::string name) { return name == "volBC408
 
 void R3BNeuland::EndOfEvent()
 {
+
     if (fVerboseLevel)
     {
         Print();
     }
     Reset();
+}
+
+void R3BNeuland::FinishRun()
+{
 }
 
 TClonesArray* R3BNeuland::GetCollection(Int_t iColl) const

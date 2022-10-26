@@ -32,8 +32,8 @@ namespace Neuland
         {
         }
 
-        Channel::Channel(const Params& p)
-            : par(p)
+        Channel::Channel(const Params& p, SideOfChannel side)
+            : par(p), Digitizing::Channel(side)
         {
         }
 
@@ -178,8 +178,8 @@ namespace Neuland
     {
     }
 
-    std::unique_ptr<Digitizing::Channel> DigitizingTacQuila::BuildChannel()
+    std::unique_ptr<Digitizing::Channel> DigitizingTacQuila::BuildChannel(Digitizing::Channel::SideOfChannel side)
     {
-        return std::unique_ptr<Digitizing::Channel>(new TacQuila::Channel(fTQP));
+        return std::unique_ptr<Digitizing::Channel>(new TacQuila::Channel(fTQP, side));
     }
 }; // namespace Neuland

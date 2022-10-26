@@ -16,10 +16,11 @@
 #include "FairRootManager.h"
 #include "R3BNeulandHit.h"
 #include "TDirectory.h"
-#include <TFile.h>
 #include "TH1D.h"
+#include "TH1I.h"
 #include "TH2D.h"
 #include "TH3D.h"
+#include <TFile.h>
 #include <algorithm>
 #include <iostream>
 #include <numeric>
@@ -42,6 +43,11 @@ R3BNeulandHitMon::R3BNeulandHitMon(TString input, TString output, const Option_t
     }
 }
 
+void R3BNeulandHitMon::Enable3DTrack()
+{
+    fIs3DTrackEnabled = true;
+    LOG(INFO) << "... with 3D track visualization";
+}
 InitStatus R3BNeulandHitMon::Init()
 {
     fHits.Init();
@@ -59,8 +65,8 @@ InitStatus R3BNeulandHitMon::Init()
 
     hTime = new TH1D("hTime", "Hit time", 30000, -1000, 1000);
     hTimeAdj = new TH1D("hTimeAdj", "Hit Time adjusted for flight path", 30000, -1000, 1000);
-    hMult = new TH1D("hMult", "Hit Multiplicity", 200, 0, 200);
-    hDepth = new TH1D("hDepth", "Maxial penetration depth", 60, 1400, 1700);
+    hNhits = new TH1I("hNhits", "Number of hits", 200, 0, 200);
+    hDepth = new TH1D("hDepth", "Maxial penetration depth", 60, 1500, 2000);
     hForemostEnergy = new TH1D("hForemostEnergy", "Foremost energy deposition", 100, 0, 100);
     hSternmostEnergy = new TH1D("hSternmostEnergy", "Sternmost energy deposition", 100, 0, 100);
     hDepthVSForemostEnergy = new TH2D("hDepthVSFrontEnergy", "Depth vs Foremost Energy", 60, 1400, 1700, 100, 0, 100);
@@ -77,6 +83,8 @@ InitStatus R3BNeulandHitMon::Init()
     hT = new TH1D("hT", "Hit Delta T", 30000, -15., -15.);
     hTNeigh = new TH1D("hTNeigh", "Hit Neigh Delta T", 30000, -15., -15.);
 
+    hNhitsOne = new TH1I("hNhitsOne", "Number of hits with maximal one hit per bar", 200, 0.5, 200.5);
+    hNhitsTwo = new TH1I("hNhitsTne", "Number of hits with more than 2 hits per bar", 200, 0.5, 200.5);
     return kSUCCESS;
 }
 
@@ -86,13 +94,35 @@ void R3BNeulandHitMon::Exec(Option_t*)
 
     // checking paddle multihits
     std::map<Int_t, Int_t> paddlenum;
-    for(const auto &hit : hits){
+    for (const auto& hit : hits)
+    {
         auto result = paddlenum.insert(std::pair<Int_t, Int_t>(hit->GetPaddle(), 1));
-        if(result.second == false)
+        if (result.second == false)
             result.first->second++;
     }
-    auto max = std::max_element(paddlenum.begin(), paddlenum.end(), [](std::pair<Int_t, Int_t> lhs, std::pair<Int_t, Int_t> rhs){return (lhs.second < rhs.second);});
-    LOG(DEBUG) << "max dupli: " << max->second;
+    auto max = std::max_element(
+        paddlenum.begin(), paddlenum.end(), [](std::pair<Int_t, Int_t> lhs, std::pair<Int_t, Int_t> rhs) {
+            return (lhs.second < rhs.second);
+        });
+    // LOG(INFO) << "max dupli: " << max->second;
+
+    if (max->second == 1)
+        hNhitsOne->Fill(hits.size());
+
+    if (max->second == 2)
+        hNhitsTwo->Fill(hits.size());
+
+    // if (max->second == 2 && hits.size() < 6)
+    // {
+    //     LOG(INFO) << "-----------------";
+    //     LOG(INFO) << "hit size: " << hits.size();
+    //     for (auto const& hit : hits)
+    //     {
+    //         auto pos = hit->GetPosition();
+    //         LOG(INFO) << "bar: " << hit->GetPaddle() << "\t pos: " << pos.X() << ", " << pos.Y() << ", " << pos.Z()
+    //                   << "\ttime: " << hit->GetT() << "\tenergy:" << hit->GetE();
+    //     }
+    // }
 
     if (fIs3DTrackEnabled)
     {
@@ -103,7 +133,8 @@ void R3BNeulandHitMon::Exec(Option_t*)
         }
     }
 
-    hMult->Fill(hits.size());
+    if (hits.size() != 0)
+        hNhits->Fill(hits.size());
     for (const auto& hit : hits)
     {
         hPosVSEnergy->Fill(hit->GetPosition().Z(), hit->GetE());
@@ -168,7 +199,7 @@ void R3BNeulandHitMon::Finish()
     gDirectory->cd(fOutput);
 
     hDepth->Write();
-    hMult->Write();
+    hNhits->Write();
     hTime->Write();
     hTimeAdj->Write();
     hForemostEnergy->Write();
@@ -186,6 +217,8 @@ void R3BNeulandHitMon::Finish()
     hT->Write();
     hTNeigh->Write();
 
+    hNhitsOne->Write();
+    hNhitsTwo->Write();
     gDirectory = tmp;
 }
 

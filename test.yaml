@@ -1,6 +1,6 @@
 simulation:
   energy:
-     min: 200
+     min: 600
      max: 600
      sep: 100
 
@@ -9,8 +9,8 @@ simulation:
     multi: [1]
 
   event:
-    number: 20
-    print: 4
+    number: 1000000
+    print: 10000
 
   files:
     workDir: /u/yanwang/software/R3BRoot/
@@ -20,6 +20,6 @@ simulation:
 detector:
   neuland:
     active: on
-    dp: 30
+    dp: 13
     position: [0, 0, 1650]
 

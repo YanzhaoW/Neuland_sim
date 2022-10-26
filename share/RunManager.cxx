@@ -182,8 +182,8 @@ void RunManager::AnalProcess(const RunConfig& rconfig)
 
 void RunManager::CreateProcess(const RunConfig& rconfig)
 {
-    if (is_simu)
-        CreateSideProcess(&RunManager::SimuProcess, rconfig);
+    // if (is_simu)
+    //     CreateSideProcess(&RunManager::SimuProcess, rconfig);
     if (is_anal)
         CreateSideProcess(&RunManager::AnalProcess, rconfig);
     this->~RunManager();

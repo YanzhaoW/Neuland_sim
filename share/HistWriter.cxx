@@ -30,6 +30,9 @@ void HistWriter::SetPar()
     std::transform(configs->begin(), configs->end(), std::back_inserter(fAnlysFileNames), [](RunConfig rc) {
         return boost::filesystem::path(rc.anlysFile.c_str());
     });
+    std::transform(configs->begin(), configs->end(), std::back_inserter(fAnlysFileNames), [](RunConfig rc) {
+        return boost::filesystem::path(rc.simFile.c_str());
+    });
 
     fFolder = runMan->GetFileDir();
 }

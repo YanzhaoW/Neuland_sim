@@ -37,26 +37,26 @@ int main(int argc, char *argv[]){
     const TString workDirectory = "/u/yanwang/software/R3BRoot";
     gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
     gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
-    FairLogger::GetLogger()->SetLogScreenLevel("INFO");
+    FairLogger::GetLogger()->SetLogScreenLevel("DEBUG");
     auto run = new FairRunAna();
-    run->SetSource(new FairFileSource("../out/sim_E_600_Mul_1_Id_2112.root"));
+    run->SetSource(new FairFileSource("../out/10-24-2022-18h-16m-2s/sim_E_600_Mul_1_Id_2112.root"));
     run->SetSink(new FairRootFileSink("ana.root"));
 
     auto io = new FairParRootFileIo();
-    io->open("../out/par_E_600_Mul_1_Id_2112.root");
+    io->open("../out/10-24-2022-18h-16m-2s/par_E_600_Mul_1_Id_2112.root");
     auto runtimeDb = run->GetRuntimeDb();
     runtimeDb->setFirstInput(io);
 
-    run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTamex()));
+    // run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTamex()));
     // run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTacQuila()));
-    run->AddTask(new R3BNeulandHitMon());
+    // run->AddTask(new R3BNeulandHitMon());
     // run->AddTask(new NeulandCalTesting());
     // run.AddTask(new R3BNeulandHitProto(argv[1]));
     LOG(ERROR) << "+++++++++++++++++++=";
     run->Init();
 
     LOG(ERROR) << "-----------------------";
-    run->Run(0,0);
+    run->Run(0,1);
 
     LOG(ERROR) << "==========================";
     // include this otherwie it will get errors
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]){
 //     TStopwatch timer;
 //     timer.Start();
 
-//     const TString workDirectory = "/u/yanwang/software/src/R3BRoot";
+//     const TString workDirectory = "/u/yanwang/software/R3BRoot";
 //     gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
 //     gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
 //     FairLogger::GetLogger()->SetLogScreenLevel("INFO");
@@ -99,10 +99,12 @@ int main(int argc, char *argv[]){
 
 //     auto parIO = new FairParRootFileIo(false);
 
+//     std::cout << "------------------run id: " << run->GetRunId() << std::endl;
 //     parIO->open(parList);
 //     rtdb->setFirstInput(parIO);
 
 //     rtdb->addRun(999);
+//     std::cout << "------------------run id: " << run->GetRunId() << std::endl;
 //     rtdb->getContainer("LosTCalPar");
 //     rtdb->setInputVersion(999, (char*)"LosTCalPar", 1, 1);
 //     rtdb->getContainer("LandTCalPar");

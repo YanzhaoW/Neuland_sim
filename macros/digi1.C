@@ -16,11 +16,12 @@ void digi1(){
     auto runtimeDb = run.GetRuntimeDb();
     runtimeDb->setFirstInput(io);
 
-    run.AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTamex()));
-    run.AddTask(new R3BNeulandHitMon());
+    // run.AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTamex()));
+    // run.AddTask(new R3BNeulandDigitizer());
+    // run.AddTask(new R3BNeulandHitMon());
 
     run.Init();
-    run.Run(0,0);
+    run.Run(0,10);
 
 
     std::cout << "*************" << std::endl;
