@@ -59,7 +59,6 @@ namespace Neuland
         // calculate the time and the width of the signal
         fTime = hit.time;
         fWidth = QdcToWidth(fQdc);
-        CheckFire(fQdc);
     }
 
     Tamex::TmxPeak::operator Digitizing::Channel::Signal() const
@@ -84,7 +83,6 @@ namespace Neuland
 
         fTime = (fTime > sig.fTime) ? fTime : sig.fTime;
         fQdc += sig.fQdc;
-        CheckFire(fQdc);
 
         // change the width of peak to make sure its correlation to qdc stays the same
         if (!fChannel)
@@ -105,24 +103,15 @@ namespace Neuland
         return std::move(width);
     }
 
-    bool Tamex::TmxPeak::CheckFire(Double_t qdc)
-    {
-        if (!fChannel)
-            LOG(FATAL) << "no channel is linked to the signal peak!";
-        auto par = fChannel->GetPar();
-        if (qdc > par.fPMTThresh)
-        {
-            fChannel->Fire();
-            return true;
-        }
-        else
-            return false;
-    }
-
     Tamex::Channel::Channel(TRandom3* rnd, const SideOfChannel side)
         : Digitizing::Channel{ side }
         , par{ rnd }
     {
+    }
+
+    bool Tamex::Channel::HasFired() const
+    {
+        return (GetSignals().size() > 0);
     }
 
     Int_t Tamex::Channel::CheckOverlapping(TmxPeak& peak) const
@@ -188,7 +177,6 @@ namespace Neuland
 
         fSignals.invalidate();
         auto peak = TmxPeak{ std::move(newHit), this };
-        fNonZeroPeak = false;
 
         LOG(DEBUG1) << "------new peak: ------" << fSide << "\tpaddleID:" << fPaddle->GetPaddleId();
         LOG(DEBUG1) << "time: " << peak.GetTime();
@@ -259,27 +247,15 @@ namespace Neuland
         auto peakTime = peak.GetTime();
         auto qdc = ToQdc(peakQdc);
 
-        return {qdc, ToTdc(peakTime), ToEnergy(qdc)};
+        return {qdc, ToTdc(peakTime), ToEnergy(qdc), this->GetSide()};
     }
     
-    // void Tamex::Channel::RemoveZeroPeaks() const
-    // {
-    //     int i = 0;
-    //     while (i < fTmxPeaks.size())
-    //     {
-    //         while (i < fTmxPeaks.size() && GetQDC(i) == 0)
-    //             RemovePeakAt(i);
-    //         i++;
-    //     }
-    //     fNonZeroPeak = true;
-    // }
-
-    // Int_t Tamex::Channel::GetNHits() const
-    // {
-    //     if (!fNonZeroPeak)
-    //         RemoveZeroPeaks();
-    //     return fTmxPeaks.size();
-    // }
+    void Tamex::Channel::RemoveZero(std::vector<Signal>& signals) const
+    {
+        // remove signals with 0 energy using c++ erase-remove idiom:
+        auto it = std::remove_if(signals.begin(), signals.end(), [](const Signal &s){return s.energy == 0.0;});
+        signals.erase(it, signals.end());
+    }
 
     void Tamex::Channel::ConstructSignals() const
     {
@@ -287,6 +263,7 @@ namespace Neuland
         signals.reserve(fTmxPeaks.size());
 
         std::transform(fTmxPeaks.begin(), fTmxPeaks.end(), std::back_inserter(signals), [](TmxPeak& peak){ return static_cast<Signal>(peak);} );
+        RemoveZero(signals);
         fSignals.set(std::move(signals));
     }
 
@@ -301,48 +278,8 @@ namespace Neuland
             par.fPedestal = hitModulePar->GetPedestal(fSide);
             par.fPMTThresh = hitModulePar->GetPMTThreshold(fSide);
             par.fQdcMin = 1 / par.fEnergyGain;
-            // LOG(INFO) << "parameter info: >>>>>>>>>>>>>>>>" << fSide;
-            // LOG(INFO) << "PMT saturation: " << hitModulePar->GetPMTSaturation(fSide);
-            // LOG(INFO) << "Energy gain: " << hitModulePar->GetEnergyGain(fSide);
-            // LOG(INFO) << "Pesdestal: " << hitModulePar->GetPedestal(fSide);
-            // LOG(INFO) << "PMT threshold: " << hitModulePar->GetPMTThreshold(fSide);
-            // LOG(INFO) << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<";
         }
     }
-
-    // Double_t Tamex::Channel::GetQDC(UShort_t index) const
-    // {
-        // if (!HasFired())
-        // {
-        //     LOG(ERROR) << "Error: Cannot get QDC values from unfired NeuLAND paddle!";
-        //     return 0;
-        // }
-
-        // if (index >= cachedQDC.size())
-        // {
-        //     LOG(ERROR) << "FATAL: ";
-        //     LOG(ERROR) << "index: " << index;
-        //     ErrorPrint();
-        //     LOG(FATAL) << "Cannot get qdc with overflowing index!";
-        //     return 0;
-        // }
-
-        // if (!cachedQDC[index].valid())
-        // {
-        //     // Get qdc from the signal peak
-        //     auto qdc = fTmxPeaks[index].GetQDC();
-
-        //     // apply energy smearing
-        //     qdc = par.fRnd->Gaus(qdc, par.fEResRel * qdc);
-
-        //     // set qdc to zero if below PMT threshold
-        //     qdc = (qdc > par.fPMTThresh) ? qdc : 0.0;
-
-        //     cachedQDC[index].set(qdc);
-        // }
-        // return cachedQDC[index].get();
-    //     return 0.0;
-    // }
 
     Double_t Tamex::Channel::ToQdc(Double_t qdc) const
     {
@@ -371,85 +308,18 @@ namespace Neuland
             return e;
     }
 
-    // Double_t Tamex::Channel::GetTDC(UShort_t index) const
-    // {
-        // if (!HasFired())
-        // {
-        //     LOG(ERROR) << "Error: Cannot get TDC values from unfired NeuLAND paddle!";
-        //     return 0;
-        // }
-
-        // if (index >= cachedTDC.size())
-        // {
-        //     LOG(FATAL) << "Cannot get tdc with overflowing index!";
-        //     return 0;
-        // }
-
-        // if (!cachedTDC[index].valid())
-        // {
-        //     cachedTDC[index].set(fTmxPeaks[index].GetTime() + par.fRnd->Gaus(0., par.fTimeRes));
-        // }
-
-        // return cachedTDC[index].get();
-    //     return 0.0;
-    // }
-
-    // Double_t Tamex::Channel::GetEnergy(UShort_t index) const
-    // {
-        // if (!HasFired())
-        // {
-        //     LOG(ERROR) << "Error: Cannot get energy values from unfired NeuLAND paddle!";
-        //     return 0;
-        // }
-
-        // if (index >= cachedEnergy.size())
-        // {
-        //     LOG(ERROR) << "FATAL: ";
-        //     LOG(ERROR) << "index: " << index;
-        //     ErrorPrint();
-        //     LOG(FATAL) << "Cannot get energy with overflowing index!";
-        //     return 0;
-        // }
-
-        // if (!cachedEnergy[index].valid())
-        // {
-        //     Double_t e = GetQDC(index);
-
-        //     // Apply reverse saturation
-        //     if (par.fExperimentalDataIsCorrectedForSaturation)
-        //     {
-        //         e = e / (1. - par.fSaturationCoefficient * e);
-        //     }
-        //     // Apply reverse attenuation
-        //     e = e * exp((2. * (Digitizing::Paddle::gHalfLength)) * Digitizing::Paddle::gAttenuation / 2.);
-        //     cachedEnergy[index].set(e);
-        // }
-        // return cachedEnergy[index].get();
-    //     return 0.0;
-    // }
-
-    // void Tamex::Channel::ErrorPrint() const
-    // {
-    //     if(fSide == leftside)
-    //         LOG(ERROR) << "current channel is on left side";
-    //     else
-    //         LOG(ERROR) << "current channel is on right side";
-    //     // LOG(ERROR) << "current size of qdc values : " << cachedQDC.size();
-    //     // LOG(ERROR) << "current size of energy values: " << cachedEnergy.size();
-    //     // LOG(ERROR) << "current size of tdc values: " << cachedTDC.size();
-
-    //     LOG(ERROR) << "size of paddle signals: " << fPaddle->GetNHits();
-    //     LOG(ERROR) << "size of right channel signals: " << fPaddle->GetRightChannel()->GetNHits();
-    //     LOG(ERROR) << "size of left channel signals: " << fPaddle->GetLeftChannel()->GetNHits();
-
-    //     auto indexmap = fPaddle->GetIndexMap();
-    //     LOG(ERROR) << "index mapping for the paddle:";
-    //     for(auto i = 0; i < indexmap.size(); i++)
-    //     {
-    //         LOG(ERROR) << "left channel " << i << " to right channel " << indexmap[i];
-    //     }
-    //         
-    // }
+    const Double_t Tamex::Channel::GetTrigTime() const
+    {
+        if (!fTrigTime.valid())
+        {
+            auto signals = GetSignals();
+            auto it = std::min_element(signals.begin(), signals.end(), [](const Signal& l, const Signal& r) {
+                return l.tdc < r.tdc;
+            });
+            fTrigTime.set(it->tdc);
+        }
+        return fTrigTime.get();
+    }
 
     DigitizingTamex::DigitizingTamex()
         : fRnd(new TRandom3{})

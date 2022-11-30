@@ -51,7 +51,7 @@ namespace Neuland
 
         const std::vector<Channel::Signal>& Channel::GetSignals() const
         {
-            if(!fSignals.valid())
+            if (!fSignals.valid())
                 ConstructSignals();
             return fSignals.getRef();
         }
@@ -64,6 +64,8 @@ namespace Neuland
             , fRightChannel(std::move(r))
             , fPaddleId(paddleID)
         {
+            if (fLeftChannel->GetSide() != Channel::left && fRightChannel->GetSide() != Channel::right)
+                LOG(fatal) << "DigitizingEngine::Paddle ctor: side of channels is not correct!";
             SetHitModulePar(par);
             fLeftChannel->SetPaddle(this);
             fRightChannel->SetPaddle(this);
@@ -92,19 +94,23 @@ namespace Neuland
                    (!fLeftChannel->HasFired() && fRightChannel->HasFired());
         }
 
-        inline Double_t Paddle::ComputeEnergy(const Channel::Signal& firstSignal, const Channel::Signal& secondSignal) const
+        inline Double_t Paddle::ComputeEnergy(const Channel::Signal& firstSignal,
+                                              const Channel::Signal& secondSignal) const
         {
-            return  std::sqrt(firstSignal.energy * secondSignal.energy);
+            return std::sqrt(firstSignal.energy * secondSignal.energy);
         }
 
-        inline Double_t Paddle::ComputeTime(const Channel::Signal& firstSignal, const Channel::Signal& secondSignal) const
+        inline Double_t Paddle::ComputeTime(const Channel::Signal& firstSignal,
+                                            const Channel::Signal& secondSignal) const
         {
-            return  (firstSignal.tdc + secondSignal.tdc) / 2. - gHalfLength / gCMedium;
+            return (firstSignal.tdc + secondSignal.tdc) / 2. - gHalfLength / gCMedium;
         }
 
-        inline Double_t Paddle::ComputePosition(const Channel::Signal& leftSignal, const Channel::Signal& rightSignal) const
+        inline Double_t Paddle::ComputePosition(const Channel::Signal& leftSignal,
+                                                const Channel::Signal& rightSignal) const
         {
-            return  (rightSignal.tdc - leftSignal.tdc) / 2. * gCMedium;
+            assert((leftSignal.side == Channel::left) && (rightSignal.side == Channel::right));
+            return (rightSignal.tdc - leftSignal.tdc) / 2. * gCMedium;
         }
 
         Float_t Paddle::CompareSignals(const Channel::Signal& firstSignal, const Channel::Signal& secondSignal) const
@@ -113,15 +119,26 @@ namespace Neuland
             auto rightE = static_cast<Float_t>(secondSignal.energy);
             auto leftT = firstSignal.tdc;
             auto rightT = secondSignal.tdc;
-            if(leftT > rightT)
-                return std::abs((leftE / rightE) * FastExp<4>(static_cast<Float_t>(gAttenuation * gCMedium * (leftT - rightT))) - 1);
+            if (leftT > rightT)
+                return std::abs((leftE / rightE) *
+                                    FastExp<4>(static_cast<Float_t>(gAttenuation * gCMedium * (leftT - rightT))) -
+                                1);
             else
-                return std::abs((rightE / leftE) * FastExp<4>(static_cast<Float_t>(gAttenuation * gCMedium * static_cast<Float_t>(rightT - leftT))) - 1);
+                return std::abs((rightE / leftE) *
+                                    FastExp<4>(static_cast<Float_t>(gAttenuation * gCMedium *
+                                                                    static_cast<Float_t>(rightT - leftT))) -
+                                1);
         }
 
-        std::vector<std::pair<int, int>> Paddle::ConstructIndexMap(const std::vector<Channel::Signal>& leftSignals, const std::vector<Channel::Signal>& rightSignals) const
+        std::vector<Paddle::Pair<int>> Paddle::ConstructIndexMap(const ChannelSignals& leftSignals,
+                                                                 const ChannelSignals& rightSignals) const
         {
-            auto indexMap = std::vector<std::pair<int, int>>(leftSignals.size(), {-1, -1});
+            if (leftSignals.size() == 0 || rightSignals.size() == 0)
+                LOG(fatal) << "DigitizingEngine.cxx::GetIndexMap(): Can't get index map from the signals with size 0.";
+
+            assert((leftSignals[0].side == Channel::left) && (rightSignals[0].side == Channel::right));
+
+            auto indexMap = std::vector<Pair<int>>(leftSignals.size(), { -1, -1 });
             auto valueMap = std::vector<Double_t>(leftSignals.size(), 0);
 
             for (auto i = 0; i < indexMap.size(); i++)
@@ -132,65 +149,75 @@ namespace Neuland
                     compareValues[j] = CompareSignals(leftSignals[i], rightSignals[j]);
                 }
                 auto compareValues_it = std::min_element(
-                    compareValues.begin(),
-                    compareValues.end(),
-                    [](const Double_t& left, const Double_t& right) {
+                    compareValues.begin(), compareValues.end(), [](const Double_t& left, const Double_t& right) {
                         return left < right;
                     });
 
-                if(compareValues_it == compareValues.end())
-                    LOG(INFO) << "DigitizingEngine.cxx::GetIndexMap(): failed to find minimum value!";
+                if (compareValues_it == compareValues.end())
+                    LOG(fatal) << "DigitizingEngine.cxx::GetIndexMap(): failed to find minimum value!";
 
                 valueMap[i] = *compareValues_it;
                 auto indexMatch = static_cast<int>(compareValues_it - compareValues.begin());
 
-                auto findResult = std::find_if(indexMap.begin(), indexMap.end(), [indexMatch](const std::pair<int, int>& pair){ return pair.second == indexMatch;});
-                if(findResult == indexMap.end())
+                auto findResult = std::find_if(indexMap.begin(), indexMap.end(), [indexMatch](const Pair<int>& pair) {
+                    return pair.right == indexMatch;
+                });
+                if (findResult == indexMap.end())
                 {
-                    indexMap[i] = {i, indexMatch};
+                    indexMap[i] = { i, indexMatch };
                 }
                 else
                 {
-                    if(*compareValues_it > valueMap[findResult->first])
-                        indexMap[i] = {i, -1};
+                    if (*compareValues_it > valueMap[findResult->left])
+                        indexMap[i] = { i, -1 };
                     else
                     {
-                        indexMap[findResult->first].second = -1;
-                        indexMap[i] = {i, indexMatch};
+                        indexMap[findResult->left].right = -1;
+                        indexMap[i] = { i, indexMatch };
                     }
                 }
             }
             return indexMap;
         }
 
-        std::vector<Paddle::Signal> Paddle::ConstructPannelSignals(const std::vector<Channel::Signal>& leftSignals, const std::vector<Channel::Signal>& rightSignals, const std::vector<std::pair<int, int>>& indexMapping) const
+        std::vector<Paddle::Signal> Paddle::ConstructPannelSignals(const ChannelSignals& leftSignals,
+                                                                   const ChannelSignals& rightSignals,
+                                                                   const std::vector<Pair<int>>& indexMapping) const
         {
+            if (leftSignals.size() == 0 || rightSignals.size() == 0)
+                LOG(fatal) << "DigitizingEngine.cxx::ConstructPannelSignals(): Can't construct from the channel "
+                              "signals with size 0.";
+
+            assert((leftSignals[0].side == Channel::left) && (rightSignals[0].side == Channel::right));
+
             auto pannelSignals = std::vector<Signal>(0);
             pannelSignals.reserve(indexMapping.size());
 
-            for(const auto it : indexMapping)
+            for (const auto it : indexMapping)
             {
-                if (it.second < 0) 
+                if (it.right < 0)
                     continue;
+
+                assert((it.left < leftSignals.size()) && (it.right < rightSignals.size()));
 
                 auto pannelSignal = Signal{};
 
-                pannelSignal.energy.value = ComputeEnergy(leftSignals[it.first], rightSignals[it.second]);
-                pannelSignal.energy.left = leftSignals[it.first].energy;
-                pannelSignal.energy.right = rightSignals[it.second].energy;
+                pannelSignal.energy = ComputeEnergy(leftSignals[it.left], rightSignals[it.right]);
+                pannelSignal.channelE.left = leftSignals[it.left].energy;
+                pannelSignal.channelE.right = rightSignals[it.right].energy;
 
-                pannelSignal.qdc.left = leftSignals[it.first].qdc;
-                pannelSignal.qdc.right = rightSignals[it.second].qdc;
+                pannelSignal.channelQdc.left = leftSignals[it.left].qdc;
+                pannelSignal.channelQdc.right = rightSignals[it.right].qdc;
 
-                pannelSignal.tdc.value = ComputeTime(leftSignals[it.first], rightSignals[it.second]);
-                pannelSignal.tdc.left = leftSignals[it.first].tdc;
-                pannelSignal.tdc.right = rightSignals[it.second].tdc;
+                pannelSignal.time = ComputeTime(leftSignals[it.left], rightSignals[it.right]);
+                pannelSignal.channelTdc.left = leftSignals[it.left].tdc;
+                pannelSignal.channelTdc.right = rightSignals[it.right].tdc;
 
-                pannelSignal.position = ComputePosition(leftSignals[it.first], rightSignals[it.second]);
+                pannelSignal.position = ComputePosition(leftSignals[it.left], rightSignals[it.right]);
 
                 pannelSignals.push_back(std::move(pannelSignal));
             }
-            return std::move(pannelSignals);
+            return pannelSignals;
         }
 
         void Paddle::SetHitModulePar(R3BNeulandHitPar* par)
@@ -218,18 +245,53 @@ namespace Neuland
 
         const std::vector<Paddle::Signal>& Paddle::GetSignals() const
         {
-            if(!fSignals.valid())
+            if (!fSignals.valid())
             {
-                if(HasFired())
+                if (HasFired())
                 {
-                    auto indexmap = ConstructIndexMap(fLeftChannel->GetSignals(), fRightChannel->GetSignals());
-                    auto signals = ConstructPannelSignals(fLeftChannel->GetSignals(), fRightChannel->GetSignals(), std::move(indexmap));
+                    auto indexmap = std::vector<Pair<int>>{ { 0, 0 } };
+
+                    if (fLeftChannel->GetSignals().size() != 1 || fRightChannel->GetSignals().size() != 1)
+                        indexmap = ConstructIndexMap(fLeftChannel->GetSignals(), fRightChannel->GetSignals());
+
+                    // // printing info:
+                    // if (std::max(fLeftChannel->GetSignals().size(), fRightChannel->GetSignals().size()) > 1)
+                    // {
+                    //     LOG(info) << "printing signals >>>>>>>>>: ";
+                    //     LOG(info) << "==========Right=========";
+                    //     for (const auto& it : fLeftChannel->GetSignals())
+                    //     {
+                    //         LOG(info) << "----------------------";
+                    //         LOG(info) << "from left Channel energy: " << it.energy;
+                    //         LOG(info) << "from left Channel qdc: " << it.qdc;
+                    //         LOG(info) << "from left Channel tdc: " << it.tdc;
+                    //     }
+
+                    //     LOG(info) << "==========Left=========";
+                    //     for (const auto& it : fRightChannel->GetSignals())
+                    //     {
+                    //         LOG(info) << "----------------------";
+                    //         LOG(info) << "from right Channel energy: " << it.energy;
+                    //         LOG(info) << "from right Channel qdc: " << it.qdc;
+                    //         LOG(info) << "from right Channel tdc: " << it.tdc;
+                    //     }
+                    //     LOG(info) << "=========index==========";
+                    //     for (const auto& it : indexmap)
+                    //     {
+                    //         LOG(info) << "----------------------";
+                    //         LOG(info) << "left index: " << it.left << " ----> right index " << it.right;
+                    //     }
+                    //     LOG(info) << "";
+                    // }
+                    // printing ends
+
+                    auto signals = ConstructPannelSignals(
+                        fLeftChannel->GetSignals(), fRightChannel->GetSignals(), std::move(indexmap));
                     fSignals.set(std::move(signals));
                 }
                 else
                     fSignals.set({});
             }
-
             return fSignals.getRef();
         }
 
@@ -259,13 +321,13 @@ namespace Neuland
             const auto& paddle = kv.second;
 
             // TODO: Should be easier with std::min?
-            if (paddle->GetLeftChannel()->HasFired() && paddle->GetLeftChannel()->GetTDC() < triggerTime)
+            if (paddle->GetLeftChannel()->HasFired() && paddle->GetLeftChannel()->GetTrigTime() < triggerTime)
             {
-                triggerTime = paddle->GetLeftChannel()->GetTDC();
+                triggerTime = paddle->GetLeftChannel()->GetTrigTime();
             }
-            if (paddle->GetRightChannel()->HasFired() && paddle->GetRightChannel()->GetTDC() < triggerTime)
+            if (paddle->GetRightChannel()->HasFired() && paddle->GetRightChannel()->GetTrigTime() < triggerTime)
             {
-                triggerTime = paddle->GetRightChannel()->GetTDC();
+                triggerTime = paddle->GetRightChannel()->GetTrigTime();
             }
         }
         return triggerTime;

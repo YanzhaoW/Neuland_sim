@@ -29,6 +29,7 @@
 
 namespace Neuland
 {
+    class DigitizingTamex;
     namespace Tamex
     {
         struct Params
@@ -62,7 +63,6 @@ namespace Neuland
 
             bool operator==(const TmxPeak&) const;
             void operator+=(TmxPeak&);
-            bool CheckFire(Double_t);
             Double_t QdcToWidth(Double_t) const;
             explicit operator Digitizing::Channel::Signal() const;
             bool valid() const { return cachedSignal.valid(); }
@@ -77,37 +77,31 @@ namespace Neuland
 
         class Channel : public Digitizing::Channel
         {
+            friend class Neuland::DigitizingTamex;
           public:
-            explicit Channel(TRandom3*, const SideOfChannel);
             ~Channel() override = default;
             void AddHit(Double_t mcTime, Double_t mcLight, Double_t dist) override;
-            bool HasFired() const override { return fHasFired; }
-            void Fire() const { fHasFired = true; }
+            bool HasFired() const override;
+            // void Fire() const { fHasFired = true; }
 
             // Getters:
-            // Double_t GetQDC(UShort_t index) const override;
-            // Double_t GetTDC(UShort_t index) const override;
-            // Double_t GetEnergy(UShort_t index) const override;
-            // Int_t GetNHits() const override;
             const Tamex::Params& GetPar() const { return par; }
             const std::vector<TmxPeak>& GetTmxPeaks() const { return fTmxPeaks; }
-            Signal TmxPeakToSignal(const TmxPeak& peak) const;
+            const Double_t GetTrigTime() const override; 
 
+            Signal TmxPeakToSignal(const TmxPeak& peak) const;
             void SetPaddle(Digitizing::Paddle* paddle) override;
 
           private:
-            // mutable std::vector<Validated<Double_t>> cachedQDC;
-            // mutable std::vector<Validated<Double_t>> cachedTDC;
-            // mutable std::vector<Validated<Double_t>> cachedEnergy;
+            Channel(TRandom3*, const SideOfChannel);
             mutable std::vector<TmxPeak> fTmxPeaks;
-            mutable Bool_t fHasFired = false;
-            mutable Bool_t fNonZeroPeak = false;
+            mutable Validated<Double_t> fTrigTime;
             Tamex::Params par;
 
             Int_t CheckOverlapping(TmxPeak&) const;
             Int_t RecheckOverlapping(Int_t index);
             void RemovePeakAt(Int_t index) const;
-            void RemoveZeroPeaks() const;
+            void RemoveZero(std::vector<Signal>&) const;
             // void ErrorPrint() const;
             Double_t ToQdc(Double_t) const;
             Double_t ToTdc(Double_t) const;

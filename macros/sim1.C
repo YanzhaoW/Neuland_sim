@@ -65,12 +65,6 @@ int sim1()
     run->AddModule(cave);
     run->AddModule(neuland);
 
-    // ----------------------------Specify parameter output--------------------------------------------
-    FairParRootFileIo* parFileIO = new FairParRootFileIo(true);
-    parFileIO->open(parafile);
-    auto rtdb = run->GetRuntimeDb();
-    rtdb->setOutput(parFileIO);
-    rtdb->saveOutput();
 
     // run->AddTask(new mytask());
     // run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTamex()));
@@ -82,6 +76,12 @@ int sim1()
     //     const_cast<G4UserEventAction*>(grun->GetUserEventAction()));
     // event->VerboseLevel(0);
 
+    // ----------------------------Specify parameter output--------------------------------------------
+    FairParRootFileIo* parFileIO = new FairParRootFileIo(true);
+    parFileIO->open(parafile);
+    auto rtdb = run->GetRuntimeDb();
+    rtdb->setOutput(parFileIO);
+    rtdb->saveOutput();
     // // ----------------------------start run--------------------------------------------
     run->Run(eventNum);
 

@@ -38,24 +38,24 @@ R3BNeulandDigitizer::R3BNeulandDigitizer(Neuland::DigitizingEngine* engine, TStr
     , fHits(output)
     , fDigitizingEngine(engine)
 {
+
 }
 
 void R3BNeulandDigitizer::SetParContainers()
 {
-    FairRunAna* run = FairRunAna::Instance();
+    auto run = FairRunAna::Instance();
     if (!run)
     {
-        LOG(FATAL) << "R3BNeulandDigitizer::SetParContainers: No analysis run";
-        return;
+        LOG(FATAL) << "R3BNeulandDigitizer::SetHitParContainers: No analysis run";
     }
 
-    FairRuntimeDb* rtdb = run->GetRuntimeDb();
+    rtdb = run->GetRuntimeDb();
     if (!rtdb)
     {
         LOG(FATAL) << "R3BNeulandDigitizer::SetParContainers: No runtime database";
-        return;
     }
 
+    assert(rtdb != nullptr);
     fNeulandGeoPar = (R3BNeulandGeoPar*)rtdb->getContainer("R3BNeulandGeoPar");
     if (!fNeulandGeoPar)
     {
@@ -63,30 +63,17 @@ void R3BNeulandDigitizer::SetParContainers()
         return;
     }
 
-    fNeulandHitPar = dynamic_cast<R3BNeulandHitPar*>(rtdb->findContainer("NeulandHitPar"));
+    auto fNeulandHitPar = dynamic_cast<R3BNeulandHitPar*>(rtdb->findContainer(fHitParName));
+
     if (fNeulandHitPar)
     {
-        LOG(INFO) << "NeulandHitPar is read from file.";
+        LOG(INFO) << "R3BNeulandDigitizer::SetHitParContainers: HitPar found from " << fHitParName;
         fDigitizingEngine->SetHitPar(fNeulandHitPar);
-
-        // auto modulesList = fNeulandHitPar->GetListOfModulePar();
-        // for(auto i = 0; i < modulesList->GetSize();i++){
-        //     auto module = dynamic_cast<R3BNeulandHitModulePar*>(modulesList->At(i));
-        //     LOG(INFO) << "Id:" << module->GetModuleId();
-
-        // }
-
     }
     else
     {
-        LOG(INFO) << "R3BNeulandDigitizer::SetParContainers: No NeulandHitPar";
+        LOG(INFO) << "R3BNeulandDigitizer::SetHitParContainers: HitPar rootfile not found. Using default values.";
     }
-
-    // auto list = rtdb ->getListOfContainers();
-    // auto next = TIter{list};
-    // while (auto obj = next()){
-    //     LOG(INFO) << obj->GetName();
-    // }
 }
 
 InitStatus R3BNeulandDigitizer::Init()
@@ -198,52 +185,22 @@ void R3BNeulandDigitizer::Exec(Option_t*)
             const TVector3 hitPixel = fNeulandGeoPar->ConvertGlobalToPixel(hitPositionGlobal);
 
             R3BNeulandHit hit(paddleID,
-                    signal.tdc.left,
-                    signal.tdc.right,
-                    signal.tdc.value,
-                    signal.energy.left,
-                    signal.energy.right,
-                    signal.energy.value,
+                    signal.channelTdc.left,
+                    signal.channelTdc.right,
+                    signal.time,
+                    signal.channelE.left,
+                    signal.channelE.right,
+                    signal.energy,
                     hitPositionGlobal,
                     hitPixel);
 
             if (fHitFilters.IsValid(hit))
             {
                 fHits.Insert(std::move(hit));
-                LOG(DEBUG1) << "Adding neuland hit with id = " << paddleID << ", time = " << signal.tdc.value << ", energy = " <<  signal.energy.value;
+                LOG(debug) << "Adding neuland hit with id = " << paddleID << ", time = " << signal.time << ", energy = " <<  signal.energy;
             }
-        }
-
-
-
-        // for (UInt_t i = 0; i < paddle->GetNHits(); i++)
-        // {
-        //     if(paddle->GetEnergy(i) <= 0)
-        //         continue;
-
-        //     const TVector3 hitPositionLocal = TVector3(paddle->GetPosition(i), 0., 0.);
-        //     const TVector3 hitPositionGlobal = fNeulandGeoPar->ConvertToGlobalCoordinates(hitPositionLocal, paddleID);
-        //     const TVector3 hitPixel = fNeulandGeoPar->ConvertGlobalToPixel(hitPositionGlobal);
-
-        //     auto pairedSignal = paddle->GetPairedSignal(i);
-
-        //     R3BNeulandHit hit(paddleID,
-        //             pairedSignal.tdc.left,
-        //             pairedSignal.tdc.right,
-        //             paddle->GetTime(i),
-        //             pairedSignal.energy.left,
-        //             pairedSignal.energy.right,
-        //             paddle->GetEnergy(i),
-        //             hitPositionGlobal,
-        //             hitPixel);
-
-        //     if (fHitFilters.IsValid(hit))
-        //     {
-        //         fHits.Insert(std::move(hit));
-        //         LOG(DEBUG1) << "Adding neuland hit with id = " << paddleID << ", time = " << paddle->GetTime(i) << ", energy = " <<  paddle->GetEnergy(i);
-        //     }
-        // } // loop over all hits for each paddle
-    } // loop over paddles
+        } // loop over all hits for each paddle
+    }
 
     // LOG(DEBUG) << "R3BNeulandDigitizer: produced " << fHits.Size() << " hits";
     LOG(DEBUG) << "========================neuland digitization ends====================";

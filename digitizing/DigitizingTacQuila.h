@@ -42,13 +42,14 @@ namespace Neuland
             ~Channel() override = default;
             void AddHit(Double_t mcTime, Double_t mcLight, Double_t dist) override;
             bool HasFired() const override;
-            Double_t GetQDC() const override;
-            Double_t GetTDC() const override;
-            Double_t GetEnergy() const override;
+            Double_t GetQDC() const ;
+            Double_t GetTDC() const ;
+            Double_t GetEnergy() const ;
+            const Double_t GetTrigTime() const override { return GetTDC(); } 
             
             void ConstructSignals() const override
             {
-                 fSignals.set({Signal{GetQDC(), GetTDC(), GetEnergy()}});
+                 fSignals.set({Signal{GetQDC(), GetTDC(), GetEnergy(), this->GetSide()}});
             }
 
           private:

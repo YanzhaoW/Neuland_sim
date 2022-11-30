@@ -5,7 +5,7 @@ void digi1(){
     const TString workDirectory = getenv("VMCWORKDIR");
     gSystem->Setenv("GEOMPATH", workDirectory + "/geometry");
     gSystem->Setenv("CONFIG_DIR", workDirectory + "/gconfig");
-    FairLogger::GetLogger()->SetLogScreenLevel("DEBUG");
+    FairLogger::GetLogger()->SetLogScreenLevel("info");
 
     FairRunAna run;
     run.SetSource(new FairFileSource("test.simu.root"));
@@ -16,12 +16,12 @@ void digi1(){
     auto runtimeDb = run.GetRuntimeDb();
     runtimeDb->setFirstInput(io);
 
-    // run.AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTamex()));
+    run.AddTask(new R3BNeulandDigitizer());
     // run.AddTask(new R3BNeulandDigitizer());
-    // run.AddTask(new R3BNeulandHitMon());
+    run.AddTask(new R3BNeulandHitMon());
 
     run.Init();
-    run.Run(0,10);
+    run.Run();
 
 
     std::cout << "*************" << std::endl;

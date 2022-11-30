@@ -23,6 +23,8 @@
 #include "R3BNeulandPoint.h"
 #include "TCAConnector.h"
 
+class FairRunAna;
+class FairRuntimeDb;
 class TGeoNode;
 class TH1F;
 class TH2F;
@@ -64,6 +66,7 @@ class R3BNeulandDigitizer : public FairTask
     void Exec(Option_t*) override;
     void AddFilter(const Filterable<R3BNeulandHit&>::Filter& f) { fHitFilters.Add(f); }
     void HistInit();
+    void SetHitParName(const TString& name ) {fHitParName = name;};
 
   private:
     TCAInputConnector<R3BNeulandPoint> fPoints;
@@ -74,8 +77,8 @@ class R3BNeulandDigitizer : public FairTask
     Filterable<R3BNeulandHit&> fHitFilters;
 
     R3BNeulandGeoPar* fNeulandGeoPar = nullptr; // non-owning
-    R3BNeulandHitPar* fNeulandHitPar = nullptr; // non-woning
 
+    TString fHitParName {};
     std::map<TString, TH1F*> fHistEnergyParticleMap;
     std::map<TString, TH1F*> fHistTotEnergyParticleMap;
     std::map<TString, Double_t> fTotEnergyParticleMap;
@@ -84,8 +87,10 @@ class R3BNeulandDigitizer : public FairTask
     TH1F* hRLTimeToTrig;
     TH2F* hElossVSQDC;
 
+    FairRuntimeDb* rtdb = nullptr;
+
   public:
-    ClassDefOverride(R3BNeulandDigitizer, 0)
+    ClassDefOverride(R3BNeulandDigitizer, 1)
 };
 
 #endif // R3B_NEULAND_DIGITIZER_H

@@ -108,7 +108,7 @@ class R3BNeuland : public R3BDetector
 
     void WriteParameterFile();
 
-    // ClassDefOverride(R3BNeuland, 3);
+    ClassDefOverride(R3BNeuland, 3);
 };
 
 #endif // R3BNEULAND_H

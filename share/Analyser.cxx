@@ -57,16 +57,19 @@ void Analyser::SetPars()
 
     gSystem->Setenv("GEOMPATH", (workDir + std::string{ "geometry" }).c_str());
     gSystem->Setenv("CONFIG_DIR", (workDir + std::string{ "gconfig" }).c_str());
-    FairLogger::GetLogger()->SetLogScreenLevel("INFO");
+    FairLogger::GetLogger()->SetLogScreenLevel("debug");
 }
 
 void Analyser::AddTasks()
 {
-    // run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTamex()));
+    auto neulandDigi = new R3BNeulandDigitizer(new Digitizing::Neuland::DigitizingTamex());
+    // auto neulandDigi = new R3BNeulandDigitizer();
+    neulandDigi->SetHitParName("NeulandHitPar");
+    run->AddTask(neulandDigi);
     // run->AddTask(new R3BNeulandDigitizer(new Neuland::DigitizingTacQuila()));
 
-    // auto hitMon = new R3BNeulandHitMon();
-    // run->AddTask(hitMon);
+    auto hitMon = new R3BNeulandHitMon();
+    run->AddTask(hitMon);
     // run->AddTask(new NeulandCalTesting());
     // run.AddTask(new R3BNeulandHitProto(argv[1]));
 }
@@ -97,7 +100,7 @@ int Analyser::Start()
     runtimeDb->addRun(999);
 
     auto parList = new TList();
-    // parList->Add(new TObjString("../parameters/params_sync_s522_0999_310522x.root"));
+    parList->Add(new TObjString("../parameters/params_sync_s522_0999_310522x.root"));
     parList->Add(new TObjString(paraFile.c_str()));
 
     auto io = new FairParRootFileIo(false);
@@ -105,8 +108,8 @@ int Analyser::Start()
     runtimeDb->setFirstInput(io);
 
 
-    // runtimeDb->getContainer("NeulandHitPar");
-    // runtimeDb->setInputVersion(999, (char*)"NeulandHitPar", 1, 1);
+    runtimeDb->getContainer("NeulandHitPar");
+    runtimeDb->setInputVersion(999, (char*)"NeulandHitPar", 1, 1);
 
 
     AddTasks();

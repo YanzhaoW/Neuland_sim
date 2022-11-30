@@ -253,4 +253,4 @@ void R3BNeuland::WriteParameterFile()
     fNeulandGeoPar->setChanged();
 }
 
-// ClassImp(R3BNeuland);
+ClassImp(R3BNeuland);

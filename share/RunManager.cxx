@@ -182,8 +182,8 @@ void RunManager::AnalProcess(const RunConfig& rconfig)
 
 void RunManager::CreateProcess(const RunConfig& rconfig)
 {
-    // if (is_simu)
-    //     CreateSideProcess(&RunManager::SimuProcess, rconfig);
+    if (is_simu)
+        CreateSideProcess(&RunManager::SimuProcess, rconfig);
     if (is_anal)
         CreateSideProcess(&RunManager::AnalProcess, rconfig);
     this->~RunManager();
@@ -205,13 +205,28 @@ void RunManager::CreateSideProcess(processFun f, const RunConfig& rconfig){
         sideChildPID = id;
     }
     else {
-        std::cerr << "side process failed to create!" << std::endl;
+        std::cerr << "[Process]side process failed to create!" << std::endl;
     }
     struct sigaction sa;
     sa.sa_handler = &handle_side_sigint;
     sigaction(SIGINT, &sa, NULL);
-    std::cout << "child process waiting.............." << std::endl;
-    wait(NULL);
+    std::cout << "[Process]child process waiting.............." << std::endl;
+    int wstatus;
+    int child_id;
+    while ((child_id = wait(&wstatus)) > 0)
+    {
+        if (WIFEXITED(wstatus))
+        {
+            if (WEXITSTATUS(wstatus) == 0)
+            {
+                std::cout << "[Process]side process on ID " << child_id << " has been executed successfully." << std::endl;
+            }
+            else
+            {
+                std::cout << "[Process]side process on ID " << child_id << " has been failed. Error code: " <<WEXITSTATUS(wstatus) <<  std::endl;
+            }
+        }
+    }
 }
 
 void RunManager::handle_side_sigint(int sig)
@@ -220,7 +235,7 @@ void RunManager::handle_side_sigint(int sig)
     if (pid > 0)
     {
         kill(pid, SIGINT);
-        std::cout << "side process " << pid << " is killed." << std::endl;
+        std::cout << "[Process]side process " << pid << " is killed." << std::endl;
     }
     GetInstance()->~RunManager();
     exit(1);
@@ -233,7 +248,7 @@ void RunManager::handle_sigint(int sig)
     {
         if (it > 0)
         {
-            std::cout << "process " << it << " is killed." << std::endl;
+            std::cout << "[Process]process " << it << " is killed." << std::endl;
             kill(it, SIGINT);
         }
     }
@@ -256,14 +271,15 @@ void RunManager::Start()
         {
             if (WEXITSTATUS(wstatus) == 0)
             {
-                std::cout << "child process on ID " << child_id << " has been executed successfully." << std::endl;
+                std::cout << "[Process]child process on ID " << child_id << " has been executed successfully." << std::endl;
             }
             else
             {
-                std::cout << "child process on ID " << child_id << " has been failed." << std::endl;
+                std::cout << "[Process]child process on ID " << child_id << " has been failed." << std::endl;
             }
         }
     }
+    std::cout << "[Process]leaving main process on ID " << getpid() << std::endl;
 }
 
 std::string RunManager::GetDate()

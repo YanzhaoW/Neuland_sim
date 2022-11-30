@@ -6,6 +6,7 @@ file(GLOB SRCS
     )
 change_file_extension(*.cxx *.h HEADERS "${SRCS}")
 
-add_library(${LIBRARY_NAME} SHARED ${SRCS} ${HEADERS} )
+add_library(${LIBRARY_NAME} SHARED ${SRCS} ${HEADERS})
 set_target_properties(${LIBRARY_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(${LIBRARY_NAME} PUBLIC ${OtherLibs} Boost::filesystem)
+

@@ -49,28 +49,30 @@ namespace Neuland
                 right = 1,
                 left = 2
             };
-            struct Signal 
+            struct Signal
             {
-                Double_t qdc        = 0.0;
-                Double_t tdc        = 0.0;
-                Double_t energy     = 0.0;
+                Double_t qdc{};
+                Double_t tdc{};
+                Double_t energy{};
+                SideOfChannel side{};
                 Signal() = default;
-                Signal(Double_t q, Double_t t, Double_t e): qdc{ q }, tdc{t}, energy{e}{}
+                Signal(Double_t q, Double_t t, Double_t e, SideOfChannel s)
+                    : qdc{ q }
+                    , tdc{ t }
+                    , energy{ e }
+                    , side{ s }
+                {
+                }
             };
             Channel(SideOfChannel);
             virtual ~Channel() = default; // FIXME: Root doesn't like pure virtual destructors (= 0;)
             virtual void AddHit(Double_t mcTime, Double_t mcLight, Double_t dist) = 0;
             virtual bool HasFired() const = 0;
             virtual void SetPaddle(Paddle* paddle) { fPaddle = paddle; };
-            virtual void ConstructSignals() const = 0;
+            virtual const Double_t GetTrigTime() const = 0; 
 
             const std::vector<Signal>& GetSignals() const;
             const SideOfChannel GetSide() const { return fSide; }
-
-            // for backward compatibility
-            virtual Double_t GetQDC() const { return 0.0; }
-            virtual Double_t GetTDC() const { return 0.0; }
-            virtual Double_t GetEnergy() const { return 0.0; }
 
           protected:
             const SideOfChannel fSide;
@@ -78,34 +80,39 @@ namespace Neuland
             Paddle* fPaddle; // pointer to the paddle who owns this channel
             std::vector<PMTHit> fPMTHits;
             // R3BNeulandHitModulePar* fNeulandHitModulePar = nullptr;
+          private:
+            virtual void ConstructSignals() const = 0;
         };
 
         class Paddle
         {
           public:
-              template<class T>
-              struct Pair
-              {
-                  T left;
-                  T right;
-              };
-              struct Values
-              {
-                  Double_t right = 0.0;
-                  Double_t left = 0.0;
-                  Double_t value = 0.0;
-                  Values() = default;
-                  Values(Double_t r, Double_t l): right(r), left(l){}
-              };
-              struct Signal
-              {
-                  Values energy{};
-                  Values tdc{};
-                  Values qdc{};
-                  Double_t position;
-                  Signal() = default;
-                  Signal(Values e, Values t, Values q): energy(e), tdc(t), qdc(q){}
-              };
+            template <class T>
+            struct Pair
+            {
+                T left{};
+                T right{};
+                Pair() = default;
+                Pair(T l, T r)
+                    : left(l)
+                    , right(r){};
+            };
+            struct Signal
+            {
+                Double_t energy{};
+                Double_t time{};
+                Double_t position{};
+                Pair<Double_t> channelE{};
+                Pair<Double_t> channelTdc{};
+                Pair<Double_t> channelQdc{};
+                Signal() = default;
+                Signal(Double_t e, Double_t t)
+                    : energy(e)
+                    , time(t)
+                {
+                }
+            };
+
             Paddle(const Int_t paddleID,
                    std::unique_ptr<Channel> l,
                    std::unique_ptr<Channel> r,
@@ -123,18 +130,24 @@ namespace Neuland
             void SetHitModulePar(R3BNeulandHitPar* par);
 
           private:
-            std::vector<std::pair<int, int>> ConstructIndexMap(const std::vector<Channel::Signal>& leftSignals, const std::vector<Channel::Signal>& rightSignals) const;
-            std::vector<Signal> ConstructPannelSignals(const std::vector<Channel::Signal>& leftSignals, const std::vector<Channel::Signal>& rightSignals, const std::vector<std::pair<int, int>>& indexMapping) const;
-            Float_t CompareSignals(const Channel::Signal& firstSignal, const Channel::Signal& secondSignal) const;
+            using ChannelSignals = std::vector<Channel::Signal>;
+            using PaddleSignals = std::vector<Signal>;
+            virtual std::vector<Pair<int>> ConstructIndexMap(const ChannelSignals& leftSignals,
+                                                             const ChannelSignals& rightSignals) const;
+            virtual PaddleSignals ConstructPannelSignals(const ChannelSignals& leftSignals,
+                                                         const ChannelSignals& rightSignals,
+                                                         const std::vector<Pair<int>>& indexMapping) const;
+            virtual Float_t CompareSignals(const Channel::Signal& firstSignal,
+                                           const Channel::Signal& secondSignal) const;
             Double_t ComputeTime(const Channel::Signal& firstSignal, const Channel::Signal& secondSignal) const;
             Double_t ComputeEnergy(const Channel::Signal& firstSignal, const Channel::Signal& secondSignal) const;
             Double_t ComputePosition(const Channel::Signal& rightSignal, const Channel::Signal& leftSignal) const;
-            mutable Validated<std::vector<Signal>> fSignals;
 
           protected:
             std::unique_ptr<Channel> fLeftChannel;
             std::unique_ptr<Channel> fRightChannel;
             R3BNeulandHitModulePar* fHitModulePar = nullptr;
+            mutable Validated<PaddleSignals> fSignals;
             const Int_t fPaddleId;
 
           public:
@@ -153,7 +166,7 @@ namespace Neuland
         virtual std::unique_ptr<Digitizing::Channel> BuildChannel(Digitizing::Channel::SideOfChannel) = 0;
 
         void SetHitPar(R3BNeulandHitPar* par) { fNeulandHitPar = par; }
-        void DepositLight(Int_t paddle_id, Double_t time, Double_t light, Double_t dist);
+        virtual void DepositLight(Int_t paddle_id, Double_t time, Double_t light, Double_t dist);
         Double_t GetTriggerTime() const;
         std::map<Int_t, std::unique_ptr<Digitizing::Paddle>> ExtractPaddles();
 
